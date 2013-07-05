@@ -24,7 +24,7 @@ __version__ = "0.1"
 __productname__ = "lazycat"
 __description__ = "A pseudo shell with restricted capability for AAA purpose."
 
-prompt = "\033[1;32mjumper:\033[0m"
+prompt = "\033[1;32mjumper\033[0m:"
 
 builtin_level1 = ['autorun', 'autotemplate', 'clear', 'dns', 'help', 'log', 'quit', 'show']
 builtin_autorun = ['config', 'enable-password', 'password']
@@ -68,6 +68,7 @@ def exit_with_usage():
 	os._exit(1)
 
 class bgrun(threading.Thread):
+	"""Run something in background"""
 
 	def __init__(self, flushlog):
 		threading.Thread.__init__(self)
@@ -84,9 +85,10 @@ def flushlog():
 			# log_filename.flush()
 			time.sleep(flush_interval)
 		except ValueError:
-			print("I/O operation failed, maybe lost some log")
+			print("flushlog(): I/O operation failed, maybe lost some log")
 			time.sleep(10)	# To avoid dead lock
-			pass
+			return 127 # buggy
+			# pass
 
 def print_cmd(cmdlist, msg="All available commands:"):
 		print (msg)
@@ -105,13 +107,12 @@ def run_with_log():
 	bgrun(flushlog).start()
 
 	try:
-		thissession = pexpect.spawn('bash', ['-c', command])	# buggy
+		thissession = pexpect.spawn('bash', ['-c', command])
 	except pexpect.ExceptionPexpect, e:
 		raise e
 		return 1
 	except SystemExit, e:
 		print(str(e))
-		# bgrun(flushlog).stop()
 		return 1
 	except (KeyboardInterrupt, EOF, TIMEOUT):
 	# except (BaseException, KeyboardInterrupt, EOFError, SystemExit):
@@ -125,30 +126,21 @@ def run_with_log():
 	fout.write("### First command: %s\n" % command)
 	print ("\033[0;31mOperation logging started, have fun :)\033[0m")
 	try:
-		thissession.interact(chr(29))
-	except KeyboardInterrupt, e:
-		raise e
-		return 1
-	except pexpect.ExceptionPexpect, e:
-		print(str(e))
-		return 1
-	except SystemExit, e:
-		print(str(e))
-		# bgrun(flushlog).stop()
-		return 1
-	except (KeyboardInterrupt, EOF, TIMEOUT):
-	# except (BaseException, KeyboardInterrupt, EOFError, SystemExit):
-		# thissession.sendcontrol('c')
+		# thissession.interact(chr(29))
+		thissession.interact()
+	except OSError:
+		pass
+	except BaseException, e:
+		print("\r" + str(e))
 		return 1
 
 	if not thissession.isalive():
-		print ("Session ended: thissession")
 		print ("\033[0;31mOperation logging stopped\033[0m")
-		# bgrun(flushlog).stop()
+		print ("Session ended: %s" % command)
+		fout.close()
 		return 0
 
 	print ("\033[0;31mOperation logging stopped\033[0m")
-	bgrun(flushlog).stop()
 	fout.close()
 	return 0
 
