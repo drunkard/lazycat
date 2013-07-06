@@ -26,12 +26,12 @@ __description__ = "A pseudo shell with restricted capability for AAA purpose."
 
 prompts = "\033[1;32mjumper\033[0m:"
 
-builtin_level1 = ['autorun', 'autotemplate', 'clear', 'dns', 'help', 'log', 'quit', 'show']
-builtin_autorun = ['config', 'enable-password', 'password']
-builtin_autotemplate = ['show', 'add', 'del']
-builtin_dns = ['resolve', 'arpa', 'trace']
-builtin_log = ['list', 'view', 'del']
-builtin_show = ['my-permission', 'user', 'this-server']
+builtin_l1 = ['autorun', 'autotemplate', 'clear', 'dns', 'help', 'log', 'quit', 'show']
+builtin_l2_autorun = ['config', 'enable-password', 'password']
+builtin_l2_autotemplate = ['show', 'add', 'del']
+builtin_l2_dns = ['resolve', 'arpa', 'trace']
+builtin_l2_log = ['list', 'view', 'del']
+builtin_l2_show = ['my-permission', 'user', 'this-server']
 
 autorun_comp = ['autorun']
 autotemplate_comp = ['autotemplate']
@@ -48,11 +48,12 @@ show_my_permission_comp = ['m', 'my', 'my-' 'my-p', 'my-permission']
 show_user_comp = ['u', 'us', 'use', 'user']
 show_this_server_comp = ['this-server']
 
-# nolog_cmd = ['ping', 'tcptraceroute', 'traceroute']
-nolog_cmd = ['ping', 'traceroute']
+nolog_cmd = ['ping', 'tcptraceroute', 'traceroute']
+# nolog_cmd = ['ping', 'traceroute']
 log_cmd = ['ssh', 'telnet']
-all_cmd = builtin_level1 + log_cmd + nolog_cmd
+all_cmd = builtin_l1 + log_cmd + nolog_cmd
 
+os.putenv('PATH', '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin')
 global path
 path = os.environ.get('HOME') + '/%4d%02d%02d' % time.localtime()[:-6]
 if not os.path.isdir(path):
@@ -168,7 +169,7 @@ def dns():
 	sub.reverse()
 	# If no sub-command, print usable sub-command and return
 	if len(sub) == 1:
-		print_cmd(builtin_dns, msg="All available sub-commands:")
+		print_cmd(builtin_l2_dns, msg="All available sub-commands:")
 		return 1
 	else:
 		l2cmd = sub.pop()	# pop out 'show'
@@ -180,7 +181,7 @@ def log():
 	sub.reverse()
 	# If no sub-command, print usable sub-command and return
 	if len(sub) == 1:
-		print_cmd(builtin_log, msg="All available sub-commands:")
+		print_cmd(builtin_l2_log, msg="All available sub-commands:")
 		return 1
 	else:
 		l2cmd = sub.pop()	# pop out 'show'
@@ -224,7 +225,7 @@ def log():
 			print("log view %s: No such file or directory" % str(f))
 			return 1
 	else:
-		print_cmd(builtin_log, msg="All available sub-commands:")
+		print_cmd(builtin_l2_log, msg="All available sub-commands:")
 
 def print_help():
 	"""快捷键:
@@ -245,7 +246,7 @@ def show():
 	sub.reverse()
 	# If no sub-command, print usable sub-command and return
 	if len(sub) == 1:
-		print_cmd(builtin_show, msg="All available sub-commands:")
+		print_cmd(builtin_l2_show, msg="All available sub-commands:")
 		return 1
 	else:
 		l2cmd = sub.pop()	# pop out 'show'
@@ -268,9 +269,9 @@ def show():
 		print("\nNetwork configs on this jumper:")
 		os.system('ip route')
 	elif l2cmd is None:
-		print_cmd(builtin_show, msg="All available sub-commands:")
+		print_cmd(builtin_l2_show, msg="All available sub-commands:")
 	else:
-		print_cmd(builtin_show, msg="All available sub-commands:")
+		print_cmd(builtin_l2_show, msg="All available sub-commands:")
 
 def sigwinch_passthrough (sig, data):
 	# Check for buggy platforms (see pexpect.setwinsize()).
