@@ -24,14 +24,14 @@ __version__ = "0.1"
 __productname__ = "lazycat"
 __description__ = "A pseudo shell with restricted capability for AAA purpose."
 
-prompt = "\033[1;32mjumper\033[0m:"
+prompts = "\033[1;32mjumper\033[0m:"
 
 builtin_level1 = ['autorun', 'autotemplate', 'clear', 'dns', 'help', 'log', 'quit', 'show']
 builtin_autorun = ['config', 'enable-password', 'password']
 builtin_autotemplate = ['show', 'add', 'del']
 builtin_dns = ['resolve', 'arpa', 'trace']
 builtin_log = ['list', 'view', 'del']
-builtin_show = ['my-permission', 'user']
+builtin_show = ['my-permission', 'user', 'this-server']
 
 autorun_comp = ['autorun']
 autotemplate_comp = ['autotemplate']
@@ -44,8 +44,9 @@ log_list_comp = ['l', 'li', 'lis', 'list']
 log_view_comp = ['v', 'vi', 'vie', 'view']
 quit_comp = ['q', 'qu', 'qui', 'quit']
 show_comp = ['sh', 'sho', 'show']
-show_mypermission_comp = ['m', 'my', 'my-' 'my-p', 'my-permission']
+show_my_permission_comp = ['m', 'my', 'my-' 'my-p', 'my-permission']
 show_user_comp = ['u', 'us', 'use', 'user']
+show_this_server_comp = ['this-server']
 
 # nolog_cmd = ['ping', 'tcptraceroute', 'traceroute']
 nolog_cmd = ['ping', 'traceroute']
@@ -170,9 +171,9 @@ def dns():
 		print_cmd(builtin_dns, msg="All available sub-commands:")
 		return 1
 	else:
-		subcmd = sub.pop()	# pop out 'show'
+		l2cmd = sub.pop()	# pop out 'show'
 
-	subcmd = sub.pop()
+	l2cmd = sub.pop()
 
 def log():
 	sub = command.split()
@@ -182,14 +183,14 @@ def log():
 		print_cmd(builtin_log, msg="All available sub-commands:")
 		return 1
 	else:
-		subcmd = sub.pop()	# pop out 'show'
+		l2cmd = sub.pop()	# pop out 'show'
 
-	subcmd = sub.pop()
-	if subcmd in log_del_comp:
+	l2cmd = sub.pop()
+	if l2cmd in log_del_comp:
 		"""eg: log del 20130705-110150-mj-telnet-10.0.0.1
 		"""
 		print ('Permission denied')
-	elif subcmd in log_list_comp:
+	elif l2cmd in log_list_comp:
 		"""eg: log list
 		"""
 
@@ -207,7 +208,7 @@ def log():
 			print("  Date  - Time - User - CMD - Host")
 			for f in files:
 				print(str(os.path.basename(f)))
-	elif subcmd in log_view_comp:
+	elif l2cmd in log_view_comp:
 		"""eg: log view 20130705-110150-mj-telnet-10.0.0.1
 		"""
 		try:
@@ -247,18 +248,26 @@ def show():
 		print_cmd(builtin_show, msg="All available sub-commands:")
 		return 1
 	else:
-		subcmd = sub.pop()	# pop out 'show'
+		l2cmd = sub.pop()	# pop out 'show'
 
-	subcmd = sub.pop()
-	if subcmd in show_mypermission_comp:
+	l2cmd = sub.pop()
+	if l2cmd in show_my_permission_comp:
 		"""show my-permission
 		"""
 		print("Not implemented yet")
-	elif subcmd in show_user_comp:
+	elif l2cmd in show_user_comp:
 		"""show user
 		"""
 		os.system('w -f')
-	elif subcmd is None:
+	elif l2cmd in show_this_server_comp:
+		"""show this-server
+		"""
+		print("IP address configs on this jumper:")
+		os.system('ip addr')
+
+		print("\nNetwork configs on this jumper:")
+		os.system('ip route')
+	elif l2cmd is None:
 		print_cmd(builtin_show, msg="All available sub-commands:")
 	else:
 		print_cmd(builtin_show, msg="All available sub-commands:")
@@ -275,8 +284,8 @@ def sigwinch_passthrough (sig, data):
 	global_pexpect_instance.setwinsize(a[0],a[1])
 
 def ttywrapper():
-	while True:
-		print (prompt),	# buggy, add history
+	while 1:
+		print (prompts),	# buggy, add history
 
 		global command
 		# Get input, and deal with exceptions
@@ -297,27 +306,27 @@ def ttywrapper():
 
 		# Classify the commands, and run them by different wrapper
 		try:
-			first_cmd = command.split()[0]
-			if first_cmd in autorun_comp:
+			l1cmd = command.split()[0]
+			if l1cmd in autorun_comp:
 				autorun()
-			if first_cmd in autotemplate_comp:
+			if l1cmd in autotemplate_comp:
 				autotemplate()
-			elif first_cmd in clear_comp:
+			elif l1cmd in clear_comp:
 				os.system("clear")
-			elif first_cmd in dns_comp:
+			elif l1cmd in dns_comp:
 				dns()
-			elif first_cmd in help_comp:
+			elif l1cmd in help_comp:
 				print_help()
-			elif first_cmd in log_comp:
+			elif l1cmd in log_comp:
 				log()
-			elif first_cmd in quit_comp:
+			elif l1cmd in quit_comp:
 				# raise SystemExit
 				os.exit()
-			elif first_cmd in show_comp:
+			elif l1cmd in show_comp:
 				show()
-			elif len(command.split()) > 1 and first_cmd in log_cmd:
+			elif len(command.split()) > 1 and l1cmd in log_cmd:
 				run_with_log()
-			elif len(command.split()) > 1 and first_cmd in nolog_cmd:
+			elif len(command.split()) > 1 and l1cmd in nolog_cmd:
 				run_without_log()
 			else:
 				print_cmd(sorted(all_cmd))
