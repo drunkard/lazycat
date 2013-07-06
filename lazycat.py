@@ -297,9 +297,11 @@ def ttywrapper():
 			print ("\r")
 			continue
 		except EOFError:
-			"""Ignore Ctrl-D"""
-			print ("^D")
-			continue
+			"""Ctrl-D"""
+			# print ("^D")
+			# continue
+			print("")
+			os.exit()
 
 		# Determine if command is empty
 		if not command.strip():
