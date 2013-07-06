@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-"""This program spawns a pseudo-shell and gives the user interactive control.
+"""This program is a pseudo-shell and gives the user interactive control.
 The entire ssh/telnet session is logged to a file, others won't be logged.
 """
 
@@ -11,6 +11,9 @@ try:
 	import signal, fcntl, termios, struct
 	import threading
 	import pexpect, re
+	import rlcompleter, readline
+	# import rlcompleter2
+	import IPython.core.completer as completer
 	from socket import gethostname
 except ImportError, e:
 	raise ImportError (str(e) + """
@@ -24,11 +27,39 @@ __version__ = "0.1"
 __productname__ = "lazycat"
 __description__ = "A pseudo shell with restricted capability for AAA purpose."
 
-prompts = "\033[1;32mjumper\033[0m:"
+# Color defines
+OFF = '\033[0m'
+RED = '\033[0;31m'
+RED_BG = '\033[00;37;41m'
+RED_BLINK = '\033[05;37;41m'
+RED_BOLD = '\033[1;31m'
+GREEN = '\033[0;32m'
+GREEN_BOLD = '\033[1;32m'
+GREY = '\033[0;37m'
+GREY_DARK = '\033[0;30m'
+GREY_BOLD = '\033[1;37m'
+GREY_DARK_BOLD = '\033[1;30m'
+YELLOW = '\033[0;33m'
+YELLOW_BOLD = '\033[1;33m'
+BLINK = '\033[5m'
+BLUE = '\033[0;34m'
+BLUE_BOLD = '\033[1;34m'
+MAGENTA = '\033[0;35m'
+MAGENTA_BOLD = '\033[1;35m'
+CYAN = '\033[0;36m'
+CYAN_BOLD = '\033[1;36m'
+WHITE = '\033[0;37m'
+WHITE_BOLD = '\033[1;37m'
 
-builtin_l1 = ['autorun', 'autotemplate', 'clear', 'dns', 'help', 'log', 'quit', 'show']
+prompts = GREEN_BOLD + "jumper" + OFF + ":"
+PROMPT = '[#$:>] '
+
+# Command enumerate
+builtin_l1 = ['autorun', 'autotemplate', 'clear', 'config', 'dns', 'help', 'log', 'quit', 'show']
+
 builtin_l2_autorun = ['config', 'enable-password', 'password']
 builtin_l2_autotemplate = ['show', 'add', 'del']
+builtin_l2_config = ['user', 'permission', 'tui']
 builtin_l2_dns = ['resolve', 'arpa', 'trace']
 builtin_l2_log = ['list', 'view', 'del']
 builtin_l2_show = ['my-permission', 'user', 'this-server']
@@ -62,12 +93,36 @@ flush_interval = 10
 title = os.getlogin() + "@" + gethostname(); del gethostname
 global_pexpect_instance = None # Used by signal handler
 
-PROMPT = '[#$:>] '
-
 def exit_with_usage():
 
 	print globals()['__doc__']
 	os._exit(1)
+
+class MyCompleter(object):  # Custom completer
+	"""Usage:
+	completer = MyCompleter(["hello", "hi", "how are you", "goodbye", "great"])
+	readline.set_completer(completer.complete)
+	readline.parse_and_bind('tab: complete')
+
+	input = raw_input("Input: ")
+	print "You entered", input
+	"""
+	def __init__(self, options):
+		self.options = sorted(options)
+
+	def complete(self, text, state):
+		if state == 0:  # on first trigger, build possible matches
+			if text:  # cache matches (entries that start with entered text)
+				self.matches = [s for s in self.options
+						if s and s.startswith(text)]
+			else:  # no text entered, all matches possible
+				self.matches = self.options[:]
+
+		# return match indexed by state
+		try:
+			return self.matches[state]
+		except IndexError:
+			return None
 
 class bgrun(threading.Thread):
 	"""Run something in background"""
@@ -127,7 +182,7 @@ def run_with_log():
 	signal.signal(signal.SIGWINCH, sigwinch_passthrough)
 
 	fout.write("### First command: %s\n" % command)
-	print ("\033[0;31mOperation logging started, have fun :)\033[0m")
+	print ("%sOperation logging started, have fun :)%s" % (RED, OFF))
 	try:
 		# thissession.interact(chr(29))
 		thissession.interact()
@@ -138,17 +193,22 @@ def run_with_log():
 		return 1
 
 	if not thissession.isalive():
-		print ("\033[0;31mOperation logging stopped\033[0m")
+		print ("\n%sOperation logging stopped%s" % (RED, OFF))
 		print ("Session ended: %s" % command)
 		fout.close()
 		return 0
 
-	print ("\033[0;31mOperation logging stopped\033[0m")
+	print ("%sOperation logging stopped%s" % (RED, OFF))
 	fout.close()
 	return 0
 
 def run_without_log():
-	os.system(command)
+	try:
+		os.system(command)
+	except BaseException, e:
+		print(str(e))
+		print("\r")
+		return 0
 
 def autorun():
 	print("""Not implemented yet
@@ -228,10 +288,26 @@ def log():
 		print_cmd(builtin_l2_log, msg="All available sub-commands:")
 
 def print_help():
-	"""快捷键:
-	?	显示可用命令
-	Ctrl-u	删除到行首
-	Ctrl-w	删除光标前面一个词
+	"""终端快捷键：
+	?		显示可用命令
+
+	Ctrl-A		光标移到行首
+	Ctrl-E		光标移到行尾
+	Ctrl-B | Left	左移光标
+	Ctrl-F | Right	右移光标
+	Ctrl-P | Up	前一个命令
+	Ctrl-N | Down	后一个命令
+
+	Backspace	删除左边一个字符
+	Ctrl-D		删除右边一个字符
+
+	Ctrl-U		剪切光标到行首之间的字符
+	Ctrl-K		剪切光标到行尾之间的字符
+	Ctrl-W		剪切光标左边一个词
+	Alt-D		剪切光标右边一个词
+
+	Ctrl-R		向前搜索历史命令
+	Return		把命令发给终端
 	"""
 	# print (print_help.__doc__)
 	try:
@@ -285,22 +361,26 @@ def sigwinch_passthrough (sig, data):
 	global_pexpect_instance.setwinsize(a[0],a[1])
 
 def ttywrapper():
+	l1_completer = MyCompleter(all_cmd)
+	readline.set_completer(l1_completer.complete)
+	readline.parse_and_bind('tab: complete')
+
 	while 1:
-		print (prompts),	# buggy, add history
+		print (prompts),	# buggy, catch cursor position
 
 		global command
 		# Get input, and deal with exceptions
 		try:
 			command = raw_input()
 		except KeyboardInterrupt:
-			"""Ignore Ctrl-C"""
-			print ("\r")
+			"""Ctrl-C"""
+			print ("^C")
 			continue
 		except EOFError:
 			"""Ctrl-D"""
 			# print ("^D")
 			# continue
-			print("")
+			print("quit")
 			os.exit()
 
 		# Determine if command is empty
@@ -327,11 +407,17 @@ def ttywrapper():
 				os.exit()
 			elif l1cmd in show_comp:
 				show()
-			elif len(command.split()) > 1 and l1cmd in log_cmd:
+			elif len(command.split()) >= 1 and l1cmd in log_cmd:
+				if len(command.split()) == 1:
+					os.system(command + ' -h')
+					continue
 				run_with_log()
-			elif len(command.split()) > 1 and l1cmd in nolog_cmd:
+			elif len(command.split()) >= 1 and l1cmd in nolog_cmd:
 				run_without_log()
 			else:
+				if l1cmd in all_cmd:
+					print("%sThis is planned, but not implemented yet.%s\n" % (CYAN_BOLD, OFF))
+
 				print_cmd(sorted(all_cmd))
 		except (KeyboardInterrupt, EOFError):
 			continue
