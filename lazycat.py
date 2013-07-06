@@ -85,10 +85,11 @@ def flushlog():
 			# log_filename.flush()
 			time.sleep(flush_interval)
 		except ValueError:
+			break
+			# for debug
 			print("flushlog(): I/O operation failed, maybe lost some log")
 			time.sleep(10)	# To avoid dead lock
-			return 127 # buggy
-			# pass
+			return 127
 
 def print_cmd(cmdlist, msg="All available commands:"):
 		print (msg)
@@ -262,17 +263,31 @@ def show():
 	else:
 		print_cmd(builtin_show, msg="All available sub-commands:")
 
+def sigwinch_passthrough (sig, data):
+	# Check for buggy platforms (see pexpect.setwinsize()).
+	if 'TIOCGWINSZ' in dir(termios):
+		TIOCGWINSZ = termios.TIOCGWINSZ
+	else:
+		TIOCGWINSZ = 1074295912 # assume
+	s = struct.pack ("HHHH", 0, 0, 0, 0)
+	a = struct.unpack ('HHHH', fcntl.ioctl(sys.stdout.fileno(), TIOCGWINSZ , s))
+	global global_pexpect_instance
+	global_pexpect_instance.setwinsize(a[0],a[1])
+
 def ttywrapper():
 	while True:
 		print (prompt),	# buggy, add history
+
 		global command
 		# Get input, and deal with exceptions
 		try:
 			command = raw_input()
 		except KeyboardInterrupt:
+			"""Ignore Ctrl-C"""
 			print ("\r")
 			continue
 		except EOFError:
+			"""Ignore Ctrl-D"""
 			print ("^D")
 			continue
 
@@ -296,7 +311,8 @@ def ttywrapper():
 			elif first_cmd in log_comp:
 				log()
 			elif first_cmd in quit_comp:
-				raise SystemExit
+				# raise SystemExit
+				os.exit()
 			elif first_cmd in show_comp:
 				show()
 			elif len(command.split()) > 1 and first_cmd in log_cmd:
@@ -307,17 +323,6 @@ def ttywrapper():
 				print_cmd(sorted(all_cmd))
 		except (KeyboardInterrupt, EOFError):
 			continue
-
-def sigwinch_passthrough (sig, data):
-	# Check for buggy platforms (see pexpect.setwinsize()).
-	if 'TIOCGWINSZ' in dir(termios):
-		TIOCGWINSZ = termios.TIOCGWINSZ
-	else:
-		TIOCGWINSZ = 1074295912 # assume
-	s = struct.pack ("HHHH", 0, 0, 0, 0)
-	a = struct.unpack ('HHHH', fcntl.ioctl(sys.stdout.fileno(), TIOCGWINSZ , s))
-	global global_pexpect_instance
-	global_pexpect_instance.setwinsize(a[0],a[1])
 
 if __name__ == "__main__":
 	try:
