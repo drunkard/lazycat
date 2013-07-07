@@ -251,12 +251,14 @@ def run_without_log(command):
 	command_args = command.strip().split()[1:]
 
 	# First, try to lookup command map
+	FOUND_IN_MAP = False
 	for entry in l1_map:
 		if command_name == entry[0]:
 			# debug
 			# print type(entry[1])
 			# print type(command_args)
 			command = entry[1] + ' '.join(command_args)
+			FOUND_IN_MAP = True
 			break
 		else:
 			continue
@@ -264,6 +266,8 @@ def run_without_log(command):
 	# Second, test if it's in PATH, return if not
 	if which(command_name):
 		pass	# goto try: part
+	elif FOUND_IN_MAP == True:
+		pass
 	else:
 		return 1
 
