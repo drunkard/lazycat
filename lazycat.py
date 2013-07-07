@@ -59,6 +59,10 @@ PROMPT = '[#$:>] '
 
 # Command enumerate
 builtin_l1 = ['autorun', 'autotemplate', 'clear', 'config', 'dns', 'help', 'log', 'quit', 'show']
+nolog_cmd = ['httping', 'ping', 'ping6', 'tcp-ping', 'udp-ping',
+	'traceroute', 'traceroute6', 'tcp-traceroute', 'udp-traceroute']
+log_cmd = ['ssh', 'telnet']
+all_cmd = builtin_l1 + log_cmd + nolog_cmd
 
 builtin_l2_autorun = ['config', 'enable-password', 'password']
 builtin_l2_autotemplate = ['show', 'add', 'del']
@@ -83,11 +87,6 @@ show_comp = ['sh', 'sho', 'show']
 show_my_permission_comp = ['m', 'my', 'my-' 'my-p', 'my-permission']
 show_user_comp = ['u', 'us', 'use', 'user']
 show_this_server_comp = ['this-server']
-
-nolog_cmd = ['httping', 'ping', 'ping6', 'tcp-ping', 'udp-ping',
-	'traceroute', 'traceroute6', 'tcp-traceroute', 'udp-traceroute']
-log_cmd = ['ssh', 'telnet']
-all_cmd = builtin_l1 + log_cmd + nolog_cmd
 
 map_resolver = {'name':0, 'cmd':1, 'desc':2}
 l1_map = [
@@ -269,10 +268,12 @@ def run_without_log(command):
 	elif FOUND_IN_MAP == True:
 		pass
 	else:
+		print("This function is not usable, please check it in PATH or l1_map: %s" % command)
 		return 1
 
 	# Run the command, this should be OK
 	try:
+		print("Full command executed: %s" % command)
 		os.system(command)
 	except BaseException, e:
 		print(str(e))
@@ -461,6 +462,7 @@ def ttywrapper():
 			continue
 
 		# Classify the commands, and run them by different wrapper
+		command = command.strip()
 		try:
 			l1cmd = command.split()[0]
 			if l1cmd in autorun_comp:
@@ -492,7 +494,7 @@ def ttywrapper():
 					print(str(e))
 			else:
 				if l1cmd in all_cmd:
-					print_not_implemented
+					print_not_implemented()
 
 				print("%sBad command:%s %s\n" % (RED_BG, OFF, command))
 				print_cmd(sorted(all_cmd))
