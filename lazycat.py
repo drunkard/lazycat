@@ -6,6 +6,7 @@ The entire ssh/telnet session is logged to a file, others won't be logged.
 """
 
 try:
+	import atexit
 	import glob, string
 	import os, sys, time, getopt
 	import signal, fcntl, termios, struct
@@ -54,6 +55,7 @@ WHITE_BOLD = '\033[1;37m'
 
 DEBUG = 0
 PATH = '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+historyPath = os.path.expanduser('~/.' + __productname__ + '_history')
 prompts = GREEN_BOLD + "jumper" + OFF + ":"
 PROMPT = '[#$:>] '
 
@@ -69,7 +71,7 @@ builtin_l2_autotemplate = ['show', 'add', 'del']
 builtin_l2_config = ['user', 'permission', 'tui']
 builtin_l2_dns = ['resolve', 'arpa', 'trace']
 builtin_l2_log = ['list-today', 'search', 'view', 'del']
-builtin_l2_show = ['my-permission', 'user', 'this-server']
+builtin_l2_show = ['my-permission', 'user', 'this-server', 'time']
 
 builtin_l3_log_search = ['by-date', 'by-time', 'by-device-ip', 'by-device-name']
 
@@ -86,11 +88,13 @@ quit_comp = ['q', 'qu', 'qui', 'quit']
 show_comp = ['sh', 'sho', 'show']
 show_my_permission_comp = ['m', 'my', 'my-' 'my-p', 'my-permission']
 show_user_comp = ['u', 'us', 'use', 'user']
-show_this_server_comp = ['this-server']
+show_this_server_comp = ['th', 'this-server']
+show_time_comp = ['ti', 'tim', 'time']
 
 map_resolver = {'name':0, 'cmd':1, 'desc':2}
 l1_map = [
 	('CMD name', 'Real Linux CMD', 'Description'),
+	('time', 'cal; date', 'Show local date and time'),
 	# hping need root privilege
 	# ('tcp-ping', 'hping -p 80 --syn ', 'Ping using TCP protocol, default 80 port'),
 	# ('udp-ping', 'hping --udp -p 53 ', 'Ping using UDP protocol, default 53 port')
@@ -141,9 +145,10 @@ class MyCompleter(object):  # Custom completer
 		self.options = sorted(options)
 
 	def complete(self, text, state):
+		# cursor_pos = readline.get_begidx()
+		# self.complete(text, text, cursor_pos)
 		if state == 0:	# on first trigger, build possible matches
 			if text:	# cache matches (entries that start with entered text)
-				# buggy, does not match '-'
 				self.matches = [s for s in self.options
 						if s and s.startswith(text)]
 				# print("\ntext value: %s" % self.matches)	# debug
@@ -189,6 +194,22 @@ def print_cmd(cmdlist, msg="All available commands:"):
 
 def print_not_implemented():
 	print("%sThis is planned, but not implemented yet.%s\n" % (CYAN_BOLD, OFF))
+
+def save_history(historyPath=historyPath):
+	print 'Olla, save_history'
+
+	f = open(historyPath)
+	try:
+		readline.write_history_file(historyPath)
+	except Exception, e:
+		print(str(e))
+	f.close()
+
+def str_to_class(s):
+	import types
+	if s in globals() and isinstance(globals()[s], types.ClassType):
+		return globals()[s]
+	return None
 
 def which(command):
 	from distutils.spawn import find_executable
@@ -411,8 +432,11 @@ def show():
 		print("IP address configs on this jumper:")
 		os.system('ip addr')
 
-		print("\nNetwork configs on this jumper:")
+		print("\nRoutes on this jumper:")
 		os.system('ip route')
+	elif l2cmd in show_time_comp:
+		os.system('cal')
+		os.system('date')
 	elif l2cmd is None:
 		print_cmd(builtin_l2_show, msg="All available sub-commands:")
 	else:
@@ -432,10 +456,16 @@ def sigwinch_passthrough (sig, data):
 def ttywrapper():
 	# t = ANSI.term()
 
-	# l1_completer = MyCompleter(all_cmd)
-	# readline.set_completer(l1_completer.complete)
-	readline.parse_and_bind('tab: complete')
-	readline.set_completer_delims(' ')
+	if os.path.exists(historyPath):
+		readline.read_history_file(historyPath)
+
+	try:
+		# l1_completer = MyCompleter(all_cmd)
+		# readline.set_completer(l1_completer.complete)
+		readline.parse_and_bind('tab: complete')
+		readline.set_completer_delims(' ')
+	except Exception, e:
+		print(str(e))
 
 	while 1:
 		readline.set_completer( MyCompleter(all_cmd).complete )
@@ -476,6 +506,7 @@ def ttywrapper():
 				log()
 			elif l1cmd in quit_comp:
 				# raise SystemExit
+				print ("%s%sSee you next time ;)%s" % (BLINK, CYAN_BOLD, OFF))
 				os.exit()
 			elif l1cmd in show_comp:
 				readline.set_completer(MyCompleter(builtin_l2_show).complete)
@@ -501,6 +532,9 @@ def ttywrapper():
 			continue
 
 if __name__ == "__main__":
+	# buggy, this is not working
+	atexit.register(save_history)
+
 	try:
 		ttywrapper()
 	except (Exception, SystemExit):
