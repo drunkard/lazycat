@@ -9,11 +9,12 @@ try:
 	import glob, string
 	import os, sys, time, getopt
 	import signal, fcntl, termios, struct
+	# import ANSI
 	import threading
 	import pexpect, re
 	import rlcompleter, readline
 	# import rlcompleter2
-	import IPython.core.completer as completer
+	# import IPython.core.completer as completer
 	from socket import gethostname
 except ImportError, e:
 	raise ImportError (str(e) + """
@@ -51,6 +52,7 @@ CYAN_BOLD = '\033[1;36m'
 WHITE = '\033[0;37m'
 WHITE_BOLD = '\033[1;37m'
 
+DEBUG = 0
 prompts = GREEN_BOLD + "jumper" + OFF + ":"
 PROMPT = '[#$:>] '
 
@@ -61,12 +63,14 @@ builtin_l2_autorun = ['config', 'enable-password', 'password']
 builtin_l2_autotemplate = ['show', 'add', 'del']
 builtin_l2_config = ['user', 'permission', 'tui']
 builtin_l2_dns = ['resolve', 'arpa', 'trace']
-builtin_l2_log = ['list', 'view', 'del']
+builtin_l2_log = ['list-today', 'search', 'view', 'del']
 builtin_l2_show = ['my-permission', 'user', 'this-server']
+
+builtin_l3_log_search = ['by-date', 'by-time', 'by-device-ip', 'by-device-name']
 
 autorun_comp = ['autorun']
 autotemplate_comp = ['autotemplate']
-clear_comp = ['c', 'cl', 'cle', 'clear']
+clear_comp = ['cl', 'cle', 'clear']
 dns_comp = ['d', 'dn', 'dns']
 help_comp = ['h', 'he', 'hel', 'help']
 log_comp = ['l', 'lo', 'log']
@@ -79,7 +83,7 @@ show_my_permission_comp = ['m', 'my', 'my-' 'my-p', 'my-permission']
 show_user_comp = ['u', 'us', 'use', 'user']
 show_this_server_comp = ['this-server']
 
-nolog_cmd = ['ping', 'tcptraceroute', 'traceroute']
+nolog_cmd = ['httping', 'ping', 'tcptraceroute', 'traceroute']
 # nolog_cmd = ['ping', 'traceroute']
 log_cmd = ['ssh', 'telnet']
 all_cmd = builtin_l1 + log_cmd + nolog_cmd
@@ -92,6 +96,15 @@ if not os.path.isdir(path):
 flush_interval = 10
 title = os.getlogin() + "@" + gethostname(); del gethostname
 global_pexpect_instance = None # Used by signal handler
+
+def debug_interactive():
+	"""Insert IPython interact terminal, and make debug simpler."""
+
+	if DEBUG == 1:
+		from IPython import embed
+		embed()
+	else:
+		return True
 
 def exit_with_usage():
 
@@ -111,16 +124,18 @@ class MyCompleter(object):  # Custom completer
 		self.options = sorted(options)
 
 	def complete(self, text, state):
-		if state == 0:  # on first trigger, build possible matches
-			if text:  # cache matches (entries that start with entered text)
+		if state == 0:	# on first trigger, build possible matches
+			if text:	# cache matches (entries that start with entered text)
 				self.matches = [s for s in self.options
 						if s and s.startswith(text)]
-			else:  # no text entered, all matches possible
+				# print("\ntext value: %s" % self.matches)	# debug
+			else:	# no text entered, all matches possible
 				self.matches = self.options[:]
 
 		# return match indexed by state
 		try:
-			return self.matches[state]
+			# return matched word, plus a space
+			return self.matches[state] + ' '
 		except IndexError:
 			return None
 
@@ -361,12 +376,18 @@ def sigwinch_passthrough (sig, data):
 	global_pexpect_instance.setwinsize(a[0],a[1])
 
 def ttywrapper():
-	l1_completer = MyCompleter(all_cmd)
-	readline.set_completer(l1_completer.complete)
+	# t = ANSI.term()
+
+	# l1_completer = MyCompleter(all_cmd)
+	# readline.set_completer(l1_completer.complete)
 	readline.parse_and_bind('tab: complete')
 
 	while 1:
+		# l1_completer = MyCompleter(all_cmd)
+		readline.set_completer( MyCompleter(all_cmd).complete )
 		print (prompts),	# buggy, catch cursor position
+		# t.cursor_save()
+		# t.cursor_restore_attrs()
 
 		global command
 		# Get input, and deal with exceptions
@@ -396,8 +417,6 @@ def ttywrapper():
 				autotemplate()
 			elif l1cmd in clear_comp:
 				os.system("clear")
-			elif l1cmd in dns_comp:
-				dns()
 			elif l1cmd in help_comp:
 				print_help()
 			elif l1cmd in log_comp:
@@ -406,6 +425,8 @@ def ttywrapper():
 				# raise SystemExit
 				os.exit()
 			elif l1cmd in show_comp:
+				readline.set_completer(MyCompleter(builtin_l2_show).complete)
+				debug_interactive()
 				show()
 			elif len(command.split()) >= 1 and l1cmd in log_cmd:
 				if len(command.split()) == 1:
@@ -418,6 +439,7 @@ def ttywrapper():
 				if l1cmd in all_cmd:
 					print("%sThis is planned, but not implemented yet.%s\n" % (CYAN_BOLD, OFF))
 
+				print("%sBad command:%s %s\n" % (RED_BG, OFF, command))
 				print_cmd(sorted(all_cmd))
 		except (KeyboardInterrupt, EOFError):
 			continue
