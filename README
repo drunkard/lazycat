@@ -8,6 +8,14 @@ This program is using python2, not compatible with python3 yet.
 Needed python mods beside builtins:
 pexpect
 
+= Required System Commands =
+hping, need root privilege, use nping from nmap instead.
+tcping, buggy, can't ping IP address, not used for now.
+nmap, with nping installed
+httping
+traceroute
+tcptraceroute
+
 = Deployment: =
 1. Add to /etc/shells, eg: echo /home/lazycat.py >> /etc/shells
 

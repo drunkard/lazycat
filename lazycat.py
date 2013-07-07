@@ -53,6 +53,7 @@ WHITE = '\033[0;37m'
 WHITE_BOLD = '\033[1;37m'
 
 DEBUG = 0
+PATH = '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
 prompts = GREEN_BOLD + "jumper" + OFF + ":"
 PROMPT = '[#$:>] '
 
@@ -83,12 +84,29 @@ show_my_permission_comp = ['m', 'my', 'my-' 'my-p', 'my-permission']
 show_user_comp = ['u', 'us', 'use', 'user']
 show_this_server_comp = ['this-server']
 
-nolog_cmd = ['httping', 'ping', 'tcptraceroute', 'traceroute']
-# nolog_cmd = ['ping', 'traceroute']
+nolog_cmd = ['httping', 'ping', 'ping6', 'tcp-ping', 'udp-ping',
+	'traceroute', 'traceroute6', 'tcp-traceroute', 'udp-traceroute']
 log_cmd = ['ssh', 'telnet']
 all_cmd = builtin_l1 + log_cmd + nolog_cmd
 
-os.putenv('PATH', '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin')
+map_resolver = {'name':0, 'cmd':1, 'desc':2}
+l1_map = [
+	('CMD name', 'Real Linux CMD', 'Description'),
+	# hping need root privilege
+	# ('tcp-ping', 'hping -p 80 --syn ', 'Ping using TCP protocol, default 80 port'),
+	# ('udp-ping', 'hping --udp -p 53 ', 'Ping using UDP protocol, default 53 port')
+	('tcp-ping', 'nping --tcp-connect -p 80 ', 'Ping using TCP protocol, using port 80'),
+	('udp-ping', 'nping --udp -p 53 ', 'Ping using UDP protocol, using port 53'),
+	('tcp-traceroute', 'tcptraceroute ', 'traceroute using TCP protocol, using port 80'),
+	# ('tcp-traceroute', 'traceroute -M tcp -p 80 ', 'traceroute using TCP protocol, using port 80'),
+	('udp-traceroute', 'traceroute -U -p 53 ', 'traceroute using UDP protocol, using port 53')
+	]
+dns_srcip_map = [
+	('1.1.1.1', '42.196.0.0/16, 49.221.128.0/17, 101.244.0.0/15, 118.205.1.0/17'),
+	('default', 'default')
+	]
+
+os.putenv('PATH', PATH)
 global path
 path = os.environ.get('HOME') + '/%4d%02d%02d' % time.localtime()[:-6]
 if not os.path.isdir(path):
@@ -126,6 +144,7 @@ class MyCompleter(object):  # Custom completer
 	def complete(self, text, state):
 		if state == 0:	# on first trigger, build possible matches
 			if text:	# cache matches (entries that start with entered text)
+				# buggy, does not match '-'
 				self.matches = [s for s in self.options
 						if s and s.startswith(text)]
 				# print("\ntext value: %s" % self.matches)	# debug
@@ -168,6 +187,16 @@ def print_cmd(cmdlist, msg="All available commands:"):
 		if len(cmdlist) > 0:
 			for c in sorted(cmdlist):
 				print ("  " + str(c))
+
+def print_not_implemented():
+	print("%sThis is planned, but not implemented yet.%s\n" % (CYAN_BOLD, OFF))
+
+def which(command):
+	from distutils.spawn import find_executable
+	if find_executable(command, path=PATH) == None:
+		return False
+	else:
+		return True
 
 def run_with_log():
 	global fout
@@ -217,7 +246,28 @@ def run_with_log():
 	fout.close()
 	return 0
 
-def run_without_log():
+def run_without_log(command):
+	command_name = command.strip().split()[0]
+	command_args = command.strip().split()[1:]
+
+	# First, try to lookup command map
+	for entry in l1_map:
+		if command_name == entry[0]:
+			# debug
+			# print type(entry[1])
+			# print type(command_args)
+			command = entry[1] + ' '.join(command_args)
+			break
+		else:
+			continue
+
+	# Second, test if it's in PATH, return if not
+	if which(command_name):
+		pass	# goto try: part
+	else:
+		return 1
+
+	# Run the command, this should be OK
 	try:
 		os.system(command)
 	except BaseException, e:
@@ -226,9 +276,8 @@ def run_without_log():
 		return 0
 
 def autorun():
-	print("""Not implemented yet
-			
-This function is intended to automatically config device with predefined
+	print_not_implemented()
+	print("""This function is intended to automatically config device with predefined
 template, such as logging, password, etc.
 """)
 	return True
@@ -383,7 +432,6 @@ def ttywrapper():
 	readline.parse_and_bind('tab: complete')
 
 	while 1:
-		# l1_completer = MyCompleter(all_cmd)
 		readline.set_completer( MyCompleter(all_cmd).complete )
 		print (prompts),	# buggy, catch cursor position
 		# t.cursor_save()
@@ -413,7 +461,7 @@ def ttywrapper():
 			l1cmd = command.split()[0]
 			if l1cmd in autorun_comp:
 				autorun()
-			if l1cmd in autotemplate_comp:
+			elif l1cmd in autotemplate_comp:
 				autotemplate()
 			elif l1cmd in clear_comp:
 				os.system("clear")
@@ -434,10 +482,13 @@ def ttywrapper():
 					continue
 				run_with_log()
 			elif len(command.split()) >= 1 and l1cmd in nolog_cmd:
-				run_without_log()
+				try:
+					run_without_log(command)
+				except Exception, e:
+					print(str(e))
 			else:
 				if l1cmd in all_cmd:
-					print("%sThis is planned, but not implemented yet.%s\n" % (CYAN_BOLD, OFF))
+					print_not_implemented
 
 				print("%sBad command:%s %s\n" % (RED_BG, OFF, command))
 				print_cmd(sorted(all_cmd))
