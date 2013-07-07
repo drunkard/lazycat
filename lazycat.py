@@ -94,7 +94,7 @@ show_time_comp = ['ti', 'tim', 'time']
 map_resolver = {'name':0, 'cmd':1, 'desc':2}
 l1_map = [
 	('CMD name', 'Real Linux CMD', 'Description'),
-	('time', 'cal; date', 'Show local date and time'),
+	('time', 'cal -3; date', 'Show local date and time'),
 	# hping need root privilege
 	# ('tcp-ping', 'hping -p 80 --syn ', 'Ping using TCP protocol, default 80 port'),
 	# ('udp-ping', 'hping --udp -p 53 ', 'Ping using UDP protocol, default 53 port')
@@ -435,8 +435,9 @@ def show():
 		print("\nRoutes on this jumper:")
 		os.system('ip route')
 	elif l2cmd in show_time_comp:
-		os.system('cal')
-		os.system('date')
+		"""show time
+		"""
+		os.system('cal -3; echo; date')
 	elif l2cmd is None:
 		print_cmd(builtin_l2_show, msg="All available sub-commands:")
 	else:
