@@ -435,12 +435,11 @@ def ttywrapper():
 	# l1_completer = MyCompleter(all_cmd)
 	# readline.set_completer(l1_completer.complete)
 	readline.parse_and_bind('tab: complete')
+	readline.set_completer_delims(' ')
 
 	while 1:
 		readline.set_completer( MyCompleter(all_cmd).complete )
 		print (prompts),	# buggy, catch cursor position
-		# t.cursor_save()
-		# t.cursor_restore_attrs()
 
 		global command
 		# Get input, and deal with exceptions
