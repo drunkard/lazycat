@@ -132,9 +132,9 @@ def exit_with_usage():
 	print globals()['__doc__']
 	os._exit(1)
 
-class MyCompleter(object):  # Custom completer
+class MLCompleter(object):  # Custom completer
 	"""Usage:
-	completer = MyCompleter(["hello", "hi", "how are you", "goodbye", "great"])
+	completer = MLCompleter(["hello", "hi", "how are you", "goodbye", "great"])
 	readline.set_completer(completer.complete)
 	readline.parse_and_bind('tab: complete')
 
@@ -246,6 +246,10 @@ def run_with_log():
 	# except (BaseException, KeyboardInterrupt, EOFError, SystemExit):
 		# thissession.sendcontrol('c')
 		return 1
+	except BaseException, e:
+		print(str(e))
+		return 1
+
 	thissession.logfile = fout
 	global global_pexpect_instance
 	global_pexpect_instance = thissession
@@ -467,7 +471,7 @@ def ttywrapper():
 		readline.read_history_file(historyPath)
 
 	try:
-		# l1_completer = MyCompleter(all_cmd)
+		# l1_completer = MLCompleter(all_cmd)
 		# readline.set_completer(l1_completer.complete)
 		readline.parse_and_bind('tab: complete')
 		readline.set_completer_delims(' ')
@@ -475,7 +479,7 @@ def ttywrapper():
 		print(str(e))
 
 	while 1:
-		readline.set_completer( MyCompleter(all_cmd).complete )
+		readline.set_completer( MLCompleter(all_cmd).complete )
 		print (prompts),	# buggy, catch cursor position
 
 		global command
@@ -516,7 +520,6 @@ def ttywrapper():
 				print ("%s%sSee you next time ;)%s" % (BLINK, CYAN_BOLD, OFF))
 				os.exit()
 			elif l1cmd in show_comp:
-				readline.set_completer(MyCompleter(builtin_l2_show).complete)
 				debug_interactive()
 				show()
 			elif len(command.split()) >= 1 and l1cmd in log_cmd:
