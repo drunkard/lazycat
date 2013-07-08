@@ -229,6 +229,12 @@ def run_with_log():
 	bgrun(flushlog).start()
 
 	try:
+		if which(command.split()[0]):
+			pass
+		else:
+			print("The command %s%s%s is not usable, please notify your administrator." % (RED_BLINK, command.split()[0], OFF))
+			return 1
+
 		thissession = pexpect.spawn('bash', ['-c', command])
 	except pexpect.ExceptionPexpect, e:
 		raise e
@@ -523,6 +529,14 @@ def ttywrapper():
 					run_without_log(command)
 				except Exception, e:
 					print(str(e))
+#			elif l1cmd in builtin_l1:
+#				try:
+#					s = command.replace(' ', '.')
+#					s = str_to_class(s)
+#					print type(s)
+#					s
+#				except Exception, e:
+#					print(str(e))
 			else:
 				if l1cmd in all_cmd:
 					print_not_implemented()
