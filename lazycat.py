@@ -133,7 +133,8 @@ def exit_with_usage():
 	os._exit(1)
 
 class MLCompleter(object):  # Custom completer
-	"""Usage:
+	"""Means Multi-Level Completer, will be used to complete multi level commands
+	Usage:
 	completer = MLCompleter(["hello", "hi", "how are you", "goodbye", "great"])
 	readline.set_completer(completer.complete)
 	readline.parse_and_bind('tab: complete')
@@ -417,6 +418,11 @@ def print_help():
 
 	return 0
 
+def quit():
+	print ("%s%sSee you next time ;)%s" % (BLINK, CYAN_BOLD, OFF))
+	# raise SystemExit
+	os.exit()
+
 def show():
 	sub = command.split()
 	sub.reverse()
@@ -495,7 +501,7 @@ def ttywrapper():
 			# print ("^D")
 			# continue
 			print("quit")
-			os.exit()
+			quit()
 
 		# Determine if command is empty
 		if not command.strip():
@@ -516,9 +522,7 @@ def ttywrapper():
 			elif l1cmd in log_comp:
 				log()
 			elif l1cmd in quit_comp:
-				# raise SystemExit
-				print ("%s%sSee you next time ;)%s" % (BLINK, CYAN_BOLD, OFF))
-				os.exit()
+				quit()
 			elif l1cmd in show_comp:
 				debug_interactive()
 				show()
