@@ -62,7 +62,8 @@ PROMPT = '[#$:>] '
 # Command enumerate
 builtin_l1 = ['auto', 'clear', 'config', 'dns', 'help', 'log', 'quit', 'show']
 nolog_cmd = ['httping', 'ping', 'ping6', 'tcp-ping', 'udp-ping',
-	'traceroute', 'traceroute6', 'tcp-traceroute', 'udp-traceroute']
+	'traceroute', 'traceroute6', 'tcp-traceroute', 'udp-traceroute',
+	'password']
 log_cmd = ['ssh', 'telnet']
 all_cmd = builtin_l1 + log_cmd + nolog_cmd
 
@@ -93,6 +94,7 @@ show_time_comp = ['ti', 'tim', 'time']
 map_resolver = {'name':0, 'cmd':1, 'desc':2}
 l1_map = [
 	('CMD name', 'Real Linux CMD', 'Description'),
+	('password', 'passwd', 'Change password'),
 	('time', 'cal -3; date', 'Show local date and time'),
 	# hping need root privilege
 	# ('tcp-ping', 'hping -p 80 --syn ', 'Ping using TCP protocol, default 80 port'),
@@ -377,7 +379,7 @@ def log():
 
 		f = path + '/' + f
 		if os.path.isfile(f):
-			os.system("less -r " + f)
+			os.system("less -r %s" % f)
 		else:
 			print("log view %s: No such file or directory" % str(f))
 			return 1
