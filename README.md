@@ -2,9 +2,7 @@ lazycat
 =======
 A pseudo shell with restricted capability for AAA purpose.
 
-Description
------------
-This program spawns a pseudo-shell and gives the user interactive control.
+This program is a pseudo-shell that gives the user interactive control.
 The entire ssh/telnet session is logged to a file, others won't be logged.
 
 Required Python Modules
@@ -17,10 +15,15 @@ pexpect
 Required System Commands
 ------------------------
 hping, need root privilege, use nping from nmap instead.
+
 tcping, buggy, can't ping IP address, not used for now.
+
 nmap, with nping installed
+
 httping
+
 traceroute
+
 tcptraceroute
 
 Deployment

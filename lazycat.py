@@ -71,7 +71,7 @@ builtin_l2_auto = ['list', 'add', 'del',
 	'config', 'enable-password', 'password']
 builtin_l2_config = ['user', 'permission', 'tui']
 builtin_l2_dns = ['resolve', 'arpa', 'trace']
-builtin_l2_log = ['list-today', 'search', 'view', 'del']
+builtin_l2_log = ['list', 'search', 'view', 'del']
 builtin_l2_show = ['my-permission', 'user', 'this-server', 'time']
 
 builtin_l3_log_search = ['by-date', 'by-time', 'by-device-ip', 'by-device-name']
@@ -188,6 +188,23 @@ def flushlog():
 			time.sleep(10)	# To avoid dead lock
 			return 127
 
+def human_readable_size(nbytes):
+	try:
+		import math
+	except ImportError:
+		print("Python module import error in human_readable_size()")
+
+	suffixes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
+
+	if nbytes == 0:
+		return '0 B'
+
+	rank = int((math.log10(nbytes)) / 3)
+	rank = min(rank, len(suffixes) - 1)
+	human = nbytes / (1024.0 ** rank)
+	f = ('%.1f' % human).rstrip('0').rstrip('.')
+	return '%s %s' % (f, suffixes[rank])
+
 def print_cmd(cmdlist, msg="All available commands:"):
 		print (msg)
 		if len(cmdlist) > 0:
@@ -198,7 +215,7 @@ def print_not_implemented():
 	print("%sThis is planned, but not implemented yet.%s\n" % (CYAN_BOLD, OFF))
 
 def save_history(historyPath=historyPath):
-	print 'Olla, save_history'
+	print 'Olla, save_history'	# debug
 
 	f = open(historyPath)
 	try:
@@ -306,7 +323,7 @@ def run_without_log(command):
 
 	# Run the command, this should be OK
 	try:
-		print("Full command executed: %s" % command)
+		print("Raw command executed: %s" % command)
 		os.system(command)
 	except BaseException, e:
 		print(str(e))
@@ -365,9 +382,13 @@ def log():
 			print("You don't have any log file.")
 		else:
 			print("Log files in %s:" % str(path))
-			print("  Date  - Time - User - CMD - Host")
+			print("%s Size  -  Date  - Time - User - CMD - Host%s" % (WHITE, OFF))
 			for f in files:
-				print(str(os.path.basename(f)))
+				try:
+					print("%s\t%s" % (human_readable_size(os.path.getsize(f)), str(os.path.basename(f))))
+				except Exception, e:
+					print(str(e))
+
 	elif l2cmd in log_view_comp:
 		"""eg: log view 20130705-110150-mj-telnet-10.0.0.1
 		"""
@@ -379,7 +400,11 @@ def log():
 
 		f = path + '/' + f
 		if os.path.isfile(f):
-			os.system("less -r %s" % f)
+			# os.system("less -r %s" % f)	# buggy
+			# TODO: need rewrite
+			with open(f) as fc:
+				for line in fc:
+					print ("%s" % str(line)),
 		else:
 			print("log view %s: No such file or directory" % str(f))
 			return 1
@@ -464,9 +489,10 @@ def sigwinch_passthrough (sig, data):
 	else:
 		TIOCGWINSZ = 1074295912 # assume
 	s = struct.pack ("HHHH", 0, 0, 0, 0)
-	a = struct.unpack ('HHHH', fcntl.ioctl(sys.stdout.fileno(), TIOCGWINSZ , s))
+	a = struct.unpack ('HHHH', fcntl.ioctl(sys.stdout.fileno(), TIOCGWINSZ, s))
 	global global_pexpect_instance
-	global_pexpect_instance.setwinsize(a[0],a[1])
+	# print ("Windows size: %s x %s" % (a[0], a[1]))	# debug
+	global_pexpect_instance.setwinsize(a[0], a[1])
 
 def ttywrapper():
 	# t = ANSI.term()
