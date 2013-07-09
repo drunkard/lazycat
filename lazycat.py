@@ -60,14 +60,14 @@ prompts = GREEN_BOLD + "jumper" + OFF + ":"
 PROMPT = '[#$:>] '
 
 # Command enumerate
-builtin_l1 = ['autorun', 'autotemplate', 'clear', 'config', 'dns', 'help', 'log', 'quit', 'show']
+builtin_l1 = ['auto', 'clear', 'config', 'dns', 'help', 'log', 'quit', 'show']
 nolog_cmd = ['httping', 'ping', 'ping6', 'tcp-ping', 'udp-ping',
 	'traceroute', 'traceroute6', 'tcp-traceroute', 'udp-traceroute']
 log_cmd = ['ssh', 'telnet']
 all_cmd = builtin_l1 + log_cmd + nolog_cmd
 
-builtin_l2_autorun = ['config', 'enable-password', 'password']
-builtin_l2_autotemplate = ['show', 'add', 'del']
+builtin_l2_auto = ['list', 'add', 'del',
+	'config', 'enable-password', 'password']
 builtin_l2_config = ['user', 'permission', 'tui']
 builtin_l2_dns = ['resolve', 'arpa', 'trace']
 builtin_l2_log = ['list-today', 'search', 'view', 'del']
@@ -75,8 +75,7 @@ builtin_l2_show = ['my-permission', 'user', 'this-server', 'time']
 
 builtin_l3_log_search = ['by-date', 'by-time', 'by-device-ip', 'by-device-name']
 
-autorun_comp = ['autorun']
-autotemplate_comp = ['autotemplate']
+auto_comp = ['auto']
 clear_comp = ['cl', 'cle', 'clear']
 dns_comp = ['d', 'dn', 'dns']
 help_comp = ['h', 'he', 'hel', 'help']
@@ -312,15 +311,12 @@ def run_without_log(command):
 		print("\r")
 		return 0
 
-def autorun():
+def auto():
 	print_not_implemented()
 	print("""This function is intended to automatically config device with predefined
 template, such as logging, password, etc.
 """)
 	return True
-
-def autotemplate():
-	autorun()
 
 def dns():
 	print("Not implemented yet")
@@ -511,10 +507,8 @@ def ttywrapper():
 		command = command.strip()
 		try:
 			l1cmd = command.split()[0]
-			if l1cmd in autorun_comp:
-				autorun()
-			elif l1cmd in autotemplate_comp:
-				autotemplate()
+			if l1cmd in auto_comp:
+				auto()
 			elif l1cmd in clear_comp:
 				os.system("clear")
 			elif l1cmd in help_comp:
