@@ -377,7 +377,7 @@ def log():
 
 		f = path + '/' + f
 		if os.path.isfile(f):
-			os.system("cat " + f)
+			os.system("less -r " + f)
 		else:
 			print("log view %s: No such file or directory" % str(f))
 			return 1
