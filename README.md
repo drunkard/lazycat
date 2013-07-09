@@ -5,6 +5,16 @@ A pseudo shell with restricted capability for AAA purpose.
 This program is a pseudo-shell that gives the user interactive control.
 The entire ssh/telnet session is logged to a file, others won't be logged.
 
+
+Main Feature
+------------
+It depends on system user account, and HOME directory is needed to store log files.
+Hardware config CLI style interface, which is simple, straight forward.
+Log whole ssh/telnet session into a log file.
+A lot network diagnosis tools, like {icmp,tcp,udp}-ping, {icmp,tcp,udp}-traceroute, and httping.
+Input auto completion by typing TAB.
+[And a lot planned feature in TODO]
+
 Required Python Modules
 -----------------------
 This program is using python2, not compatible with python3 yet.
