@@ -18,10 +18,10 @@ try:
 	# import IPython.core.completer as completer
 	from socket import gethostname
 except ImportError, e:
-	raise ImportError (str(e) + """
+	raise ImportError (str(e) + """\033[05;37;41m
 
 A critical module was not found. Probably this operating system does not
-support it. Pexpect is intended for UNIX-like operating systems.""")
+support it. Pexpect is intended for UNIX-like operating systems.\033[0m""")
 
 __author__ = "Drunkard Zhang"
 __email__ = "gongfan193@gmail.com"
@@ -56,11 +56,19 @@ WHITE_BOLD = '\033[1;37m'
 DEBUG = 0
 PATH = '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
 historyPath = os.path.expanduser('~/.' + __productname__ + '_history')
-prompts = GREEN_BOLD + "jumper" + OFF + ":"
-PROMPT = '[#$:>] '
+PROMPT = GREEN_BOLD + "jumper" + OFF + ": "
 
 # Command enumerate
-builtin_l1 = ['auto', 'clear', 'config', 'dns', 'help', 'log', 'quit', 'show']
+builtin_l1 = [
+	'auto',
+	'clear',
+	'config',
+	'dns',
+	'help',
+	'log',
+	'quit',
+	'show'
+	]
 nolog_cmd = ['httping', 'ping', 'ping6', 'tcp-ping', 'udp-ping',
 	'traceroute', 'traceroute6', 'tcp-traceroute', 'udp-traceroute',
 	'password']
@@ -517,12 +525,11 @@ def ttywrapper():
 
 	while 1:
 		readline.set_completer( MLCompleter(all_cmd).complete )
-		print (prompts),	# buggy, catch cursor position
 
 		global command
 		# Get input, and deal with exceptions
 		try:
-			command = raw_input()
+			command = raw_input(PROMPT)
 		except KeyboardInterrupt:
 			"""Ctrl-C"""
 			print ("^C")
