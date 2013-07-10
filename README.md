@@ -9,18 +9,26 @@ The entire ssh/telnet session is logged to a file, others won't be logged.
 Main Feature
 ------------
 It depends on system user account, and HOME directory is needed to store log files.
+
 Hardware config CLI style interface, which is simple, straight forward.
+
 Log whole ssh/telnet session into a log file.
+
 A lot network diagnosis tools, like {icmp,tcp,udp}-ping, {icmp,tcp,udp}-traceroute, and httping.
+
 Input auto completion by typing TAB.
+
 [And a lot planned feature in TODO]
+
 
 Required Python Modules
 -----------------------
-This program is using python2, not compatible with python3 yet.
+This program is using python2, not compatible with python3 yet. Because the session recording code is heavily depends on pexpect, so before I implemented my own interact code or pexpect moved to python3, it can only work with python2.
 
 Needed python mods beside builtins:
+
 pexpect
+
 
 Required System Commands
 ------------------------
@@ -35,6 +43,7 @@ httping
 traceroute
 
 tcptraceroute
+
 
 Deployment
 ----------
