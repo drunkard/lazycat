@@ -330,14 +330,17 @@ def run_without_log(command):
 		print("\r")
 		return 0
 
-def auto():
+def do_auto():
 	print_not_implemented()
 	print("""This function is intended to automatically config device with predefined
 template, such as logging, password, etc.
 """)
 	return True
 
-def dns():
+def do_clear():
+	os.system("clear")
+
+def do_dns():
 	print("Not implemented yet")
 	return 1
 
@@ -352,7 +355,7 @@ def dns():
 
 	l2cmd = sub.pop()
 
-def log():
+def do_log():
 	sub = command.split()
 	sub.reverse()
 	# If no sub-command, print usable sub-command and return
@@ -411,7 +414,7 @@ def log():
 	else:
 		print_cmd(builtin_l2_log, msg="All available sub-commands:")
 
-def print_help():
+def do_help():
 	"""终端快捷键：
 	?		显示可用命令
 
@@ -433,20 +436,24 @@ def print_help():
 	Ctrl-R		向前搜索历史命令
 	Return		把命令发给终端
 	"""
-	# print (print_help.__doc__)
+	# print (do_help.__doc__)
 	try:
-		print string.replace(print_help.__doc__,'\n\t','\n')
+		print string.replace(do_help.__doc__,'\n\t','\n')
 	except Exception, e:
 		print(str(e))
 
 	return 0
 
-def quit():
+def do_quit():
 	print ("%s%sSee you next time ;)%s" % (BLINK, CYAN_BOLD, OFF))
 	# raise SystemExit
 	os.exit()
 
-def show():
+def do_shell():
+	print("Permission denied")
+	return 1
+
+def do_show():
 	sub = command.split()
 	sub.reverse()
 	# If no sub-command, print usable sub-command and return
@@ -525,7 +532,7 @@ def ttywrapper():
 			# print ("^D")
 			# continue
 			print("quit")
-			quit()
+			do_quit()
 
 		# Determine if command is empty
 		if not command.strip():
@@ -536,18 +543,18 @@ def ttywrapper():
 		try:
 			l1cmd = command.split()[0]
 			if l1cmd in auto_comp:
-				auto()
+				do_auto()
 			elif l1cmd in clear_comp:
-				os.system("clear")
+				do_clear()
 			elif l1cmd in help_comp:
-				print_help()
+				do_help()
 			elif l1cmd in log_comp:
-				log()
+				do_log()
 			elif l1cmd in quit_comp:
-				quit()
+				do_quit()
 			elif l1cmd in show_comp:
 				debug_interactive()
-				show()
+				do_show()
 			elif len(command.split()) >= 1 and l1cmd in log_cmd:
 				if len(command.split()) == 1:
 					os.system(command + ' -h')
