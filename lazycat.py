@@ -155,8 +155,6 @@ class MLCompleter(object):  # Custom completer
 		self.options = sorted(options)
 
 	def complete(self, text, state):
-		# cursor_pos = readline.get_begidx()
-		# self.complete(text, text, cursor_pos)
 		if state == 0:	# on first trigger, build possible matches
 			if text:	# cache matches (entries that start with entered text)
 				self.matches = [s for s in self.options
@@ -213,13 +211,13 @@ def human_readable_size(nbytes):
 	f = ('%.1f' % human).rstrip('0').rstrip('.')
 	return '%s %s' % (f, suffixes[rank])
 
-def print_cmd(cmdlist, msg="All available commands:"):
+def say_cmd(cmdlist, msg="All available commands:"):
 		print (msg)
 		if len(cmdlist) > 0:
 			for c in sorted(cmdlist):
 				print ("  " + str(c))
 
-def print_not_implemented():
+def say_not_implemented():
 	print("%sThis is planned, but not implemented yet.%s\n" % (CYAN_BOLD, OFF))
 
 def save_history(historyPath=historyPath):
@@ -339,7 +337,7 @@ def run_without_log(command):
 		return 0
 
 def do_auto():
-	print_not_implemented()
+	say_not_implemented()
 	print("""This function is intended to automatically config device with predefined
 template, such as logging, password, etc.
 """)
@@ -356,7 +354,7 @@ def do_dns():
 	sub.reverse()
 	# If no sub-command, print usable sub-command and return
 	if len(sub) == 1:
-		print_cmd(builtin_l2_dns, msg="All available sub-commands:")
+		say_cmd(builtin_l2_dns, msg="All available sub-commands:")
 		return 1
 	else:
 		l2cmd = sub.pop()	# pop out 'show'
@@ -368,7 +366,7 @@ def do_log():
 	sub.reverse()
 	# If no sub-command, print usable sub-command and return
 	if len(sub) == 1:
-		print_cmd(builtin_l2_log, msg="All available sub-commands:")
+		say_cmd(builtin_l2_log, msg="All available sub-commands:")
 		return 1
 	else:
 		l2cmd = sub.pop()	# pop out 'show'
@@ -420,7 +418,7 @@ def do_log():
 			print("log view %s: No such file or directory" % str(f))
 			return 1
 	else:
-		print_cmd(builtin_l2_log, msg="All available sub-commands:")
+		say_cmd(builtin_l2_log, msg="All available sub-commands:")
 
 def do_help():
 	"""终端快捷键：
@@ -466,7 +464,7 @@ def do_show():
 	sub.reverse()
 	# If no sub-command, print usable sub-command and return
 	if len(sub) == 1:
-		print_cmd(builtin_l2_show, msg="All available sub-commands:")
+		say_cmd(builtin_l2_show, msg="All available sub-commands:")
 		return 1
 	else:
 		l2cmd = sub.pop()	# pop out 'show'
@@ -493,9 +491,9 @@ def do_show():
 		"""
 		os.system('cal -3; echo; date')
 	elif l2cmd is None:
-		print_cmd(builtin_l2_show, msg="All available sub-commands:")
+		say_cmd(builtin_l2_show, msg="All available sub-commands:")
 	else:
-		print_cmd(builtin_l2_show, msg="All available sub-commands:")
+		say_cmd(builtin_l2_show, msg="All available sub-commands:")
 
 def sigwinch_passthrough (sig, data):
 	# Check for buggy platforms (see pexpect.setwinsize()).
@@ -582,10 +580,10 @@ def ttywrapper():
 #					print(str(e))
 			else:
 				if l1cmd in all_cmd:
-					print_not_implemented()
+					say_not_implemented()
 
 				print("%sBad command:%s %s\n" % (RED_BG, OFF, command))
-				print_cmd(sorted(all_cmd))
+				say_cmd(sorted(all_cmd))
 		except (KeyboardInterrupt, EOFError):
 			continue
 
