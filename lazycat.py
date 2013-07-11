@@ -6,7 +6,6 @@ The entire ssh/telnet session is logged to a file, others won't be logged.
 """
 
 try:
-    import atexit
     import glob, string
     import os, sys, time, getopt
     import signal, fcntl, termios, struct
@@ -55,6 +54,7 @@ WHITE_BOLD = '\033[1;37m'
 
 DEBUG = 0
 PATH = '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+historyLength = 1000
 historyPath = os.path.expanduser('~/.' + __productname__ + '_history')
 PROMPT = GREEN_BOLD + "jumper" + OFF + ": "
 
@@ -221,10 +221,9 @@ def say_not_implemented():
     print("%sThis is planned, but not implemented yet.%s\n" % (CYAN_BOLD, OFF))
 
 def save_history(historyPath=historyPath):
-    print 'Olla, save_history' # debug
-
-    f = open(historyPath)
+    f = open(historyPath, 'w')
     try:
+        readline.set_history_length(1000)
         readline.write_history_file(historyPath)
     except Exception, e:
         print(str(e))
@@ -422,29 +421,29 @@ def do_log():
 
 def do_help():
     """终端快捷键：
-    ?        显示可用命令
+    ?               显示可用命令
 
-    Ctrl-A        光标移到行首
-    Ctrl-E        光标移到行尾
-    Ctrl-B | Left    左移光标
-    Ctrl-F | Right    右移光标
-    Ctrl-P | Up    前一个命令
-    Ctrl-N | Down    后一个命令
+    Ctrl-A          光标移到行首
+    Ctrl-E          光标移到行尾
+    Ctrl-B | Left   左移光标
+    Ctrl-F | Right  右移光标
+    Ctrl-P | Up     前一个命令
+    Ctrl-N | Down   后一个命令
 
-    Backspace    删除左边一个字符
-    Ctrl-D        删除右边一个字符
+    Backspace       删除左边一个字符
+    Ctrl-D          删除右边一个字符
 
-    Ctrl-U        剪切光标到行首之间的字符
-    Ctrl-K        剪切光标到行尾之间的字符
-    Ctrl-W        剪切光标左边一个词
-    Alt-D        剪切光标右边一个词
+    Ctrl-U          剪切光标到行首之间的字符
+    Ctrl-K          剪切光标到行尾之间的字符
+    Ctrl-W          剪切光标左边一个词
+    Alt-D           剪切光标右边一个词
 
-    Ctrl-R        向前搜索历史命令
-    Return        把命令发给终端
+    Ctrl-R          向前搜索历史命令
+    Return          把命令发给终端
     """
     # print (do_help.__doc__)
     try:
-        print string.replace(do_help.__doc__,'\n\t','\n')
+        print string.replace(do_help.__doc__, '\n    ', '\n')
     except Exception, e:
         print(str(e))
 
@@ -452,6 +451,7 @@ def do_help():
 
 def do_quit():
     print ("%s%sSee you next time ;)%s" % (BLINK, CYAN_BOLD, OFF))
+
     # raise SystemExit
     os.exit()
 
@@ -485,7 +485,7 @@ def do_show():
         os.system('ip addr')
 
         print("\nRoutes on this jumper:")
-        os.system('ip route')
+        os.system('ip route | grep -e default -e kernel ')
     elif l2cmd in show_time_comp:
         """show time
         """
@@ -587,12 +587,24 @@ def ttywrapper():
         except (KeyboardInterrupt, EOFError):
             continue
 
+# History, automatically load on login, and save on exit.
+try:
+    readline.read_history_file(historyPath)
+except IOError:
+    pass
+
+try:
+    import atexit
+    readline.set_history_length(historyLength)
+    atexit.register( readline.write_history_file, historyPath )
+except Exception:
+    print("Error on register readline.write_history_file, won't save command history.")
+
 if __name__ == "__main__":
     try:
         ttywrapper()
     except (Exception, SystemExit):
-        os._exit(1)
-        # buggy, this is not working
-        atexit.register(save_history)
+        # After ttywrapper() exit, we get SystemExit exception here
+        sys.exit()
 
 # vim: set sw=4 ts=4 expandtab:
