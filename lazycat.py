@@ -80,7 +80,7 @@ builtin_l2_auto = ['list', 'add', 'del',
 builtin_l2_config = ['user', 'permission', 'tui']
 builtin_l2_dns = ['resolve', 'arpa', 'trace']
 builtin_l2_log = ['list', 'search', 'view', 'del']
-builtin_l2_show = ['my-permission', 'user', 'this-server', 'time']
+builtin_l2_show = ['all-jumper', 'history', 'my-permission', 'user', 'this-server', 'time']
 
 builtin_l3_log_search = ['by-date', 'by-time', 'by-device-ip', 'by-device-name']
 
@@ -94,6 +94,7 @@ log_list_comp = ['l', 'li', 'lis', 'list']
 log_view_comp = ['v', 'vi', 'vie', 'view']
 quit_comp = ['q', 'qu', 'qui', 'quit']
 show_comp = ['sh', 'sho', 'show']
+show_history_comp = ['h', 'history']
 show_my_permission_comp = ['m', 'my', 'my-' 'my-p', 'my-permission']
 show_user_comp = ['u', 'us', 'use', 'user']
 show_this_server_comp = ['th', 'this-server']
@@ -470,10 +471,20 @@ def do_show():
         l2cmd = sub.pop() # pop out 'show'
 
     l2cmd = sub.pop()
-    if l2cmd in show_my_permission_comp:
+    if l2cmd in show_history_comp:
+        """show history
+        """
+        try:
+            cnt = 0
+            for h in range(readline.get_current_history_length()):
+                cnt = cnt + 1
+                print ("%s\t\b\b\b%s" % (cnt, readline.get_history_item(h)))
+        except Exception, e:
+            print(str(e))
+    elif l2cmd in show_my_permission_comp:
         """show my-permission
         """
-        print("Not implemented yet")
+        say_not_implemented()
     elif l2cmd in show_user_comp:
         """show user
         """
@@ -509,9 +520,6 @@ def sigwinch_passthrough (sig, data):
 
 def ttywrapper():
     # t = ANSI.term()
-
-    if os.path.exists(historyPath):
-        readline.read_history_file(historyPath)
 
     try:
         # l1_completer = MLCompleter(all_cmd)
