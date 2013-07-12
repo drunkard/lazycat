@@ -60,7 +60,7 @@ PROMPT = GREEN_BOLD + "jumper" + OFF + ": "
 SHOW_WARN = 0
 
 # Command enumerate
-builtin_l1 = [
+nolog_cmd = [
     'auto',
     'clear',
     'config',
@@ -68,23 +68,67 @@ builtin_l1 = [
     'help',
     'log',
     'quit',
-    'show'
+    'show',
+    'httping',
+    'ping',
+    'ping6',
+    'tcp-ping',
+    'udp-ping',
+    'traceroute',
+    'traceroute6',
+    'tcp-traceroute',
+    'udp-traceroute',
+    'password'
     ]
-nolog_cmd = ['httping', 'ping', 'ping6', 'tcp-ping', 'udp-ping',
-    'traceroute', 'traceroute6', 'tcp-traceroute', 'udp-traceroute',
-    'password']
-log_cmd = ['ssh', 'telnet']
-all_cmd = builtin_l1 + log_cmd + nolog_cmd
+log_cmd = [
+    'ssh',
+    'telnet'
+    ]
+all_cmd = log_cmd + nolog_cmd
 
-builtin_l2_auto = ['list', 'add', 'del',
-    'config', 'enable-password', 'password']
-builtin_l2_config = ['user', 'permission', 'tui']
-builtin_l2_dns = ['resolve', 'arpa', 'trace']
-builtin_l2_log = ['list', 'search', 'view', 'del']
-builtin_l2_show = ['all-jumper', 'history', 'my-permission', 'user', 'this-server', 'time']
+# Level 2 commands definations
+auto_l2 = [
+    'list',
+    'add',
+    'del',
+    'config',
+    'enable-password',
+    'password'
+    ]
+config_l2 = [
+    'user',
+    'permission',
+    'tui'
+    ]
+dns_l2 = [
+    'arpa',
+    'resolve',
+    'trace'
+    ]
+log_l2 = [
+    'list',
+    'search',
+    'view',
+    'del'
+    ]
+show_l2 = [
+    'all-jumper',
+    'history',
+    'my-permission',
+    'user',
+    'this-server',
+    'time'
+    ]
 
-builtin_l3_log_search = ['by-date', 'by-time', 'by-device-ip', 'by-device-name']
+# Level 3 commands definations
+log_search_l3 = [
+    'by-date',
+    'by-time',
+    'by-device-ip',
+    'by-device-name'
+    ]
 
+# Partial command definations
 auto_comp = ['auto']
 clear_comp = ['cl', 'cle', 'clear']
 dns_comp = ['d', 'dn', 'dns']
@@ -357,7 +401,7 @@ def do_dns():
     sub.reverse()
     # If no sub-command, print usable sub-command and return
     if len(sub) == 1:
-        say_cmd(builtin_l2_dns, msg="All available sub-commands:")
+        say_cmd(dns_l2, msg="All available sub-commands:")
         return 1
     else:
         l2cmd = sub.pop() # pop out 'show'
@@ -369,7 +413,7 @@ def do_log():
     sub.reverse()
     # If no sub-command, print usable sub-command and return
     if len(sub) == 1:
-        say_cmd(builtin_l2_log, msg="All available sub-commands:")
+        say_cmd(log_l2, msg="All available sub-commands:")
         return 1
     else:
         l2cmd = sub.pop() # pop out 'show'
@@ -421,7 +465,7 @@ def do_log():
             print("log view %s: No such file or directory" % str(f))
             return 1
     else:
-        say_cmd(builtin_l2_log, msg="All available sub-commands:")
+        say_cmd(log_l2, msg="All available sub-commands:")
 
 def do_help():
     """终端快捷键：
@@ -454,7 +498,7 @@ def do_help():
     return 0
 
 def do_quit():
-    print ("%s%sSee you next time ;)%s" % (BLINK, CYAN_BOLD, OFF))
+    print ("%sSee you next time %s;)%s" % (CYAN_BOLD, BLINK, OFF))
 
     # raise SystemExit
     os.exit()
@@ -468,7 +512,7 @@ def do_show():
     sub.reverse()
     # If no sub-command, print usable sub-command and return
     if len(sub) == 1:
-        say_cmd(builtin_l2_show, msg="All available sub-commands:")
+        say_cmd(show_l2, msg="All available sub-commands:")
         return 1
     else:
         l2cmd = sub.pop() # pop out 'show'
@@ -480,7 +524,7 @@ def do_show():
         try:
             cnt = 0
             for h in range(readline.get_current_history_length()):
-                cnt = cnt + 1
+                cnt += 1
                 print ("%s\t\b\b\b%s" % (cnt, readline.get_history_item(h)))
         except Exception, e:
             print(str(e))
@@ -505,9 +549,9 @@ def do_show():
         """
         os.system('cal -3; echo; date')
     elif l2cmd is None:
-        say_cmd(builtin_l2_show, msg="All available sub-commands:")
+        say_cmd(show_l2, msg="All available sub-commands:")
     else:
-        say_cmd(builtin_l2_show, msg="All available sub-commands:")
+        say_cmd(show_l2, msg="All available sub-commands:")
 
 def sigwinch_passthrough (sig, data):
     # Check for buggy platforms (see pexpect.setwinsize()).
@@ -581,14 +625,6 @@ def ttywrapper():
                     run_without_log(command)
                 except Exception, e:
                     print(str(e))
-#            elif l1cmd in builtin_l1:
-#                try:
-#                    s = command.replace(' ', '.')
-#                    s = str_to_class(s)
-#                    print type(s)
-#                    s
-#                except Exception, e:
-#                    print(str(e))
             else:
                 if l1cmd in all_cmd:
                     say_not_implemented()
