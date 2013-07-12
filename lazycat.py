@@ -57,6 +57,7 @@ PATH = '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
 historyLength = 1000
 historyPath = os.path.expanduser('~/.' + __productname__ + '_history')
 PROMPT = GREEN_BOLD + "jumper" + OFF + ": "
+SHOW_WARN = 0
 
 # Command enumerate
 builtin_l1 = [
@@ -281,7 +282,11 @@ def run_with_log():
     signal.signal(signal.SIGWINCH, sigwinch_passthrough)
 
     fout.write("### First command: %s\n" % command)
-    print ("%sOperation logging started, have fun :)%s" % (RED, OFF))
+    try:
+        if SHOW_WARN == 1:
+            print ("%sOperation logging started, have fun :)%s" % (RED, OFF))
+    except NameError:
+        pass
     try:
         # thissession.interact(chr(29))
         thissession.interact()
@@ -291,13 +296,11 @@ def run_with_log():
         print("\r" + str(e))
         return 1
 
-    if not thissession.isalive():
-        print ("\n%sOperation logging stopped%s" % (RED, OFF))
-        print ("Session ended: %s" % command)
-        fout.close()
-        return 0
-
-    print ("%sOperation logging stopped%s" % (RED, OFF))
+    try:
+        if SHOW_WARN == 1:
+            print ("%sOperation logging stopped%s" % (RED, OFF))
+    except NameError:
+        pass
     fout.close()
     return 0
 
