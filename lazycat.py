@@ -61,14 +61,18 @@ SHOW_WARN = 0
 
 # Command enumerate
 nolog_cmd = [
+    # {'KEY': ('showed cmd', 'real cmd, maybe system cmd', 'Description')},
+    # Single module functions
     'auto',
     'clear',
     'config',
     'dns',
     'help',
     'log',
+    'password',
     'quit',
     'show',
+    # These tools mapped to system commands
     'httping',
     'ping',
     'ping6',
@@ -77,8 +81,7 @@ nolog_cmd = [
     'traceroute',
     'traceroute6',
     'tcp-traceroute',
-    'udp-traceroute',
-    'password'
+    'udp-traceroute'
     ]
 log_cmd = [
     'ssh',
@@ -97,6 +100,7 @@ auto_l2 = [
     ]
 config_l2 = [
     'user',
+    'password',
     'permission',
     'tui'
     ]
@@ -173,15 +177,6 @@ flush_interval = 10
 title = os.getlogin() + "@" + gethostname(); del gethostname
 global_pexpect_instance = None # Used by signal handler
 
-def debug_interactive():
-    """Insert IPython interact terminal, and make debug simpler."""
-
-    if DEBUG == 1:
-        from IPython import embed
-        embed()
-    else:
-        return True
-
 def exit_with_usage():
 
     print globals()['__doc__']
@@ -230,8 +225,9 @@ class bgrun(threading.Thread):
 def flushlog():
     while True:
         try:
+            # Add timestamp
             fout.write ('\n### %4d-%02d-%02dT%02d:%02d:%02d ' % time.localtime()[:-3] + title + "\n")
-            # log_filename.flush()
+            fout.flush() # flush back to file
             time.sleep(flush_interval)
         except ValueError:
             break
@@ -292,7 +288,7 @@ def run_with_log():
     global fout
     log_filename = path + '/%4d%02d%02d-%02d%02d%02d-' % time.localtime()[:-3] + \
         os.getlogin() + '-' + command.strip().replace(' ', '-')
-    fout = file (log_filename, "ab")
+    fout = file(log_filename, "ab")
 
     # Begin log with timestamp
     # fout.write ('%4d-%02d-%02dT%02d:%02d:%02d ' % time.localtime()[:-3] + title + "\n")
@@ -613,7 +609,6 @@ def ttywrapper():
             elif l1cmd in quit_comp:
                 do_quit()
             elif l1cmd in show_comp:
-                debug_interactive()
                 do_show()
             elif len(command.split()) >= 1 and l1cmd in log_cmd:
                 if len(command.split()) == 1:
