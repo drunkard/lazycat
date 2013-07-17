@@ -7,12 +7,12 @@ The entire ssh/telnet session is logged to a file, others won't be logged.
 
 try:
     import glob, string
-    import os, sys, time, getopt
+    import os, sys, time
     import signal, fcntl, termios, struct
     # import ANSI
     import threading
-    import pexpect, re
-    import rlcompleter, readline
+    import pexpect
+    import readline
     # import rlcompleter2
     # import IPython.core.completer as completer
     from socket import gethostname
@@ -56,7 +56,7 @@ DEBUG = 0
 PATH = '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
 historyLength = 1000
 historyPath = os.path.expanduser('~/.' + __productname__ + '_history')
-PROMPT = GREEN_BOLD + "jumper" + OFF + ": "
+PROMPT = GREEN_BOLD + "jumper" + OFF + "> "
 SHOW_WARN = 0
 
 # Command enumerate
@@ -81,12 +81,10 @@ nolog_cmd = [
     'traceroute',
     'traceroute6',
     'tcp-traceroute',
-    'udp-traceroute'
-    ]
+    'udp-traceroute']
 log_cmd = [
     'ssh',
-    'telnet'
-    ]
+    'telnet']
 all_cmd = log_cmd + nolog_cmd
 
 # Level 2 commands definations
@@ -96,41 +94,38 @@ auto_l2 = [
     'del',
     'config',
     'enable-password',
-    'password'
-    ]
+    'password']
 config_l2 = [
     'user',
     'password',
     'permission',
-    'tui'
-    ]
+    'tui']
 dns_l2 = [
     'arpa',
     'resolve',
-    'trace'
-    ]
+    'trace']
 log_l2 = [
     'list',
     'search',
     'view',
-    'del'
-    ]
+    'del']
 show_l2 = [
     'all-jumper',
     'history',
     'my-permission',
     'user',
     'this-server',
-    'time'
-    ]
+    'time']
 
 # Level 3 commands definations
 log_search_l3 = [
     'by-date',
     'by-time',
     'by-device-ip',
-    'by-device-name'
-    ]
+    'by-device-name']
+
+# These commands' output to ncurses like window, which is hard to strip
+OMIT_OUTPUT = ['atop', 'htop', 'iotop', 'iftop', 'dnstop']
 
 # Partial command definations
 auto_comp = ['auto']
@@ -149,9 +144,9 @@ show_user_comp = ['u', 'us', 'use', 'user']
 show_this_server_comp = ['th', 'this-server']
 show_time_comp = ['ti', 'tim', 'time']
 
-map_resolver = {'name':0, 'cmd':1, 'desc':2}
+map_resolver = {'name': 0, 'cmd': 1, 'desc': 2}
 l1_map = [
-    ('CMD name', 'Real Linux CMD', 'Description'),
+    # ('CMD name', 'Real Linux CMD', 'Description'),
     ('password', 'passwd', 'Change password'),
     ('time', 'cal -3; date', 'Show local date and time'),
     # hping need root privilege
@@ -161,12 +156,10 @@ l1_map = [
     ('udp-ping', 'nping --udp -p 53 ', 'Ping using UDP protocol, using port 53'),
     ('tcp-traceroute', 'tcptraceroute ', 'traceroute using TCP protocol, using port 80'),
     # ('tcp-traceroute', 'traceroute -M tcp -p 80 ', 'traceroute using TCP protocol, using port 80'),
-    ('udp-traceroute', 'traceroute -U -p 53 ', 'traceroute using UDP protocol, using port 53')
-    ]
+    ('udp-traceroute', 'traceroute -U -p 53 ', 'traceroute using UDP protocol, using port 53')]
 dns_srcip_map = [
     ('1.1.1.1', '42.196.0.0/16, 49.221.128.0/17, 101.244.0.0/15, 118.205.1.0/17'),
-    ('default', 'default')
-    ]
+    ('default', 'default')]
 
 os.putenv('PATH', PATH)
 global path
@@ -175,14 +168,14 @@ if not os.path.isdir(path):
     os.makedirs(path)
 flush_interval = 10
 title = os.getlogin() + "@" + gethostname(); del gethostname
-global_pexpect_instance = None # Used by signal handler
+global_pexpect_instance = None  # Used by signal handler
 
 def exit_with_usage():
 
     print globals()['__doc__']
     os._exit(1)
 
-class MLCompleter(object): # Custom completer
+class MLCompleter(object):  # Custom completer
     """Means Multi-Level Completer, will be used to complete multi level commands
     Usage:
     completer = MLCompleter(["hello", "hi", "how are you", "goodbye", "great"])
@@ -196,12 +189,12 @@ class MLCompleter(object): # Custom completer
         self.options = sorted(options)
 
     def complete(self, text, state):
-        if state == 0: # on first trigger, build possible matches
-            if text:   # cache matches (entries that start with entered text)
+        if state == 0:  # on first trigger, build possible matches
+            if text:    # cache matches (entries that start with entered text)
                 self.matches = [s for s in self.options
                         if s and s.startswith(text)]
-                # print("\ntext value: %s" % self.matches) # debug
-            else: # no text entered, all matches possible
+                # print("\ntext value: %s" % self.matches)  # debug
+            else:  # no text entered, all matches possible
                 self.matches = self.options[:]
 
         # return match indexed by state
@@ -227,13 +220,13 @@ def flushlog():
         try:
             # Add timestamp
             fout.write ('\n### %4d-%02d-%02dT%02d:%02d:%02d ' % time.localtime()[:-3] + title + "\n")
-            fout.flush() # flush back to file
+            fout.flush()  # flush back to file
             time.sleep(flush_interval)
         except ValueError:
             break
             # for debug
             print("flushlog(): I/O operation failed, maybe lost some log")
-            time.sleep(10) # To avoid dead lock
+            time.sleep(10)  # To avoid dead lock
             return 127
 
 def human_readable_size(nbytes):
@@ -328,6 +321,7 @@ def run_with_log():
     except NameError:
         pass
     try:
+        # TODO: rewrite, control on every cmd
         # thissession.interact(chr(29))
         thissession.interact()
     except OSError:
@@ -535,10 +529,10 @@ def do_show():
     elif l2cmd in show_this_server_comp:
         """show this-server
         """
-        print("IP address configs on this jumper:")
+        print("IP address configs on this host:")
         os.system('ip addr')
 
-        print("\nRoutes on this jumper:")
+        print("\nRoutes on this host:")
         os.system('ip route | grep -e default -e kernel ')
     elif l2cmd in show_time_comp:
         """show time
