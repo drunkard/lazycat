@@ -446,7 +446,9 @@ def do_log():
 
         f = path + '/' + f
         if os.path.isfile(f):
-            # os.system("less -r %s" % f) # buggy
+            os.system("less -r %s" % f) # buggy
+            return True
+
             # TODO: need rewrite
             with open(f) as fc:
                 for line in fc:
