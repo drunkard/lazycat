@@ -1,0 +1,57 @@
+#!/usr/bin/env python3
+DEVCONF_BACKUP_PATH = "/var/lib/lazycat/devconf/"
+
+
+# debug
+"""Following values in logging module:
+CRITICAL = 50
+FATAL = CRITICAL
+ERROR = 40
+WARNING = 30
+WARN = WARNING
+INFO = 20
+DEBUG = 10
+NOTSET = 0
+"""
+DEBUG_LEVEL = 20
+DEBUG_FG = 0    # 0|1
+
+
+# custom ftp server settings
+# FTP_SERVER_ADDR is used both as FTP server bind address and client will also
+# connect it.
+FTP_SERVER_ADDR = '10.0.0.1'
+FTP_PORT = 21
+FTP_USER = 'upload'
+FTP_PASSWORD = 'upload12345'
+FTP_USER_PERM = 'edw'   # write only
+FTP_DATA = DEVCONF_BACKUP_PATH
+FTP_TIMEOUT = 600       # seconds, stop after idle for this interval
+# For security, this system uses a customed disposable FTP server with
+# randomized username/password pairs.
+FTP_RANDOMIZE = 0
+FTP_RANDOMIZE_USER_LEN = 3
+FTP_RANDOMIZE_PASSWORD_LEN = 3
+# If you don't like my customed disposable FTP server, then set yours here. You
+# must set "FTP_RANDOMIZE = 0" to enable this. This server will be started on
+# demand, and stopped after finished jobs or timeouted.
+# The value of FTP_SERVER is script name under /etc/init.d/
+FTP_SERVER_NAME = 'vsftpd'
+"""
+useradd -m -c "FTP user upload devconf" -s /sbin/nologin \
+    -d /data/lazycat/devconf upload
+passwd upload
+"""
+
+
+# logging paths
+LOG_PATH = '/var/log/lazycat/'   # must ends with "/"
+FTP_LOG = LOG_PATH + 'ftp'
+DEVCONF_LOG = LOG_PATH + 'devconf'
+LAZYCAT_LOG = LOG_PATH + 'lazycat'
+LOGIN_LOG = LOG_PATH + 'login'
+
+
+# syslog server for network devices
+SYSLOG_SERVER = '10.0.0.2'
+SYSLOG_PORT = 514

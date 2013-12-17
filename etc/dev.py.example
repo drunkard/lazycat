@@ -1,0 +1,99 @@
+#!/usr/bin/env python3
+# Add classes you want to process with, name them with prefix 'default_' or
+# 'hosts_' stripped.
+supported_class = [
+    'greenway',
+    'raisecom',
+    'raisecom_sy',
+    'raisecom_switch',
+    'zte',
+]
+
+# Bell OLT
+default_bell = {
+    'username': 'admin',
+    'password': 'pwd123',
+}
+hosts_bell = {
+}
+
+# Dowslake
+default_dowslake = {
+    'username': 'admin',
+    'password': 'pwd123',
+}
+hosts_dowslake = {
+}
+
+# Greenway OLT
+default_greenway = {
+    'username': 'admin',
+    'password': 'pwd123',
+    'escalating_password': 'pwd123',
+}
+hosts_greenway = {
+    'NAP': {'name': 'NAP', 'ip': '10.2.2.1'},
+}
+
+# H3C
+default_h3c = {
+    'username': 'admin',
+    'password': 'pwd123',
+    'escalating_password': 'pwd123',
+}
+hosts_h3c = {
+}
+
+# Huawei
+default_huawei = {
+    'username': 'admin',
+    'password': 'pwd123',
+    'escalating_password': 'pwd123',
+}
+
+# Raisecom OLT
+default_raisecom = {
+    'username': 'admin',
+    'password': 'pwd123',
+    'escalating_password': 'pwd123',
+}
+hosts_raisecom = {
+    '上南': {'name': '上南', 'ip': '10.2.1.3'},
+}
+
+# Raisecom ShangYe
+default_raisecom_sy = {
+    'username': 'admin',
+    'password': 'pwd123',
+    'escalating_password': 'pwd123',
+}
+hosts_raisecom_sy = {
+    '商业': {'name': '商业', 'ip': '10.2.2.2'},
+}
+
+# Raisecom switch
+default_raisecom_switch = {
+    'username': 'admin',
+    'password': 'pwd123',
+    'escalating_password': 'pwd123',
+}
+hosts_raisecom_switch = {
+    '商业-2828': {'name': '商业-2828', 'ip': '10.2.2.5'},
+}
+
+# ZTE OLT
+default_zte = {
+    'username': 'admin',
+    'password': 'pwd123',
+}
+hosts_zte = {
+    '商业-2': {'name': '商业-2', 'ip': '10.2.2.70'},
+}
+
+# ZTE switch
+default_zte_switch = {
+    'username': 'admin',
+    'password': 'pwd123',
+}
+hosts_zte_switch = {
+}
