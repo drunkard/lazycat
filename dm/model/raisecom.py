@@ -12,6 +12,7 @@ password = ''   # set in etc/dev.py
 password_wrong = r'(Login:|Bad passwords)'
 prompt = '>'
 
+
 # priviledge escalating things
 escalating_needed = [
     'show_config_command',
@@ -28,9 +29,18 @@ escalating_conflicted = 0
 escalated_prompt = '#'
 escalated = 0   # set to 1 while escalated successfully
 
+
 # exit commands
 exit_escalated = 'exit'
 exit_os = 'quit'
+
+
+# save config
+save_config_need_confirm = 0
+save_config_command = 'write'
+save_config_ok_hint = 'Save current configuration successfully'
+save_config_fail_hint = 'fail'   # not confirmed
+
 
 # show config things
 show_config_need_escalating = 1
@@ -38,6 +48,7 @@ show_config_command = 'show running-config'
 show_config_paging_prompt = '--More--'
 show_config_abort = 'q'
 show_config_next_page = ' '
+
 
 # upload config file related things
 upload_config_need_escalating = 1

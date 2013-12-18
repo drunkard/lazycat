@@ -3,6 +3,7 @@ Device management
 """
 import logging
 from functools import partial
+from dm import ftp
 
 
 def backup_config():
@@ -11,9 +12,15 @@ def backup_config():
     from dm.backup import roll_on_vendor
     if not hasattr(dev, 'supported_class'):
         return False
+    # Prepare FTP server
+    ftp_server = ftp.server()
+    if not ftp_server.start():
+        return False
     # Roll all supported classes
     for vendor in dev.supported_class:
         roll_on_vendor(vendor)
+    # Stop FTP server
+    ftp_server.stop()
 
 
 def check_attr(device, attrlist):

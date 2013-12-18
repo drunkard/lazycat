@@ -1,12 +1,12 @@
 import logging
 import os
-from dm import random_char
 
 
 class server:
     """Custom FTP server used to serve users."""
     def __init__(self):
         """Read config arguments"""
+        from dm import random_char
         from etc import lazycat_conf
         self.user = random_char(3)
         self.password = random_char(3)
