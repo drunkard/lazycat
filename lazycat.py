@@ -16,6 +16,7 @@ try:
     # import rlcompleter2
     # import IPython.core.completer as completer
     from socket import gethostname
+    from lib import color
 except ImportError, e:
     raise ImportError (str(e) + """\033[05;37;41m
 
@@ -28,35 +29,11 @@ __version__ = "0.1"
 __productname__ = "lazycat"
 __description__ = "A pseudo shell with restricted capability for AAA purpose."
 
-# Color defines
-OFF = '\033[0m'
-RED = '\033[0;31m'
-RED_BG = '\033[00;37;41m'
-RED_BLINK = '\033[05;37;41m'
-RED_BOLD = '\033[1;31m'
-GREEN = '\033[0;32m'
-GREEN_BOLD = '\033[1;32m'
-GREY = '\033[0;37m'
-GREY_DARK = '\033[0;30m'
-GREY_BOLD = '\033[1;37m'
-GREY_DARK_BOLD = '\033[1;30m'
-YELLOW = '\033[0;33m'
-YELLOW_BOLD = '\033[1;33m'
-BLINK = '\033[5m'
-BLUE = '\033[0;34m'
-BLUE_BOLD = '\033[1;34m'
-MAGENTA = '\033[0;35m'
-MAGENTA_BOLD = '\033[1;35m'
-CYAN = '\033[0;36m'
-CYAN_BOLD = '\033[1;36m'
-WHITE = '\033[0;37m'
-WHITE_BOLD = '\033[1;37m'
-
 DEBUG = 0
 PATH = '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
 historyLength = 1000
 historyPath = os.path.expanduser('~/.' + __productname__ + '_history')
-PROMPT = GREEN_BOLD + "jumper" + OFF + "> "
+PROMPT = color.GREEN_BOLD + "jumper" + color.OFF + "> "
 SHOW_WARN = 0
 
 # Command enumerate
@@ -170,13 +147,14 @@ flush_interval = 10
 title = os.getlogin() + "@" + gethostname(); del gethostname
 global_pexpect_instance = None  # Used by signal handler
 
-def exit_with_usage():
 
+def exit_with_usage():
     print globals()['__doc__']
     os._exit(1)
 
+
 class MLCompleter(object):  # Custom completer
-    """Means Multi-Level Completer, will be used to complete multi level commands
+    """Means Multi-Level Completer, used to complete multi level commands
     Usage:
     completer = MLCompleter(["hello", "hi", "how are you", "goodbye", "great"])
     readline.set_completer(completer.complete)
@@ -192,7 +170,7 @@ class MLCompleter(object):  # Custom completer
         if state == 0:  # on first trigger, build possible matches
             if text:    # cache matches (entries that start with entered text)
                 self.matches = [s for s in self.options
-                        if s and s.startswith(text)]
+                                if s and s.startswith(text)]
                 # print("\ntext value: %s" % self.matches)  # debug
             else:  # no text entered, all matches possible
                 self.matches = self.options[:]
@@ -204,6 +182,7 @@ class MLCompleter(object):  # Custom completer
         except IndexError:
             return None
 
+
 class bgrun(threading.Thread):
     """Run something in background"""
 
@@ -214,6 +193,7 @@ class bgrun(threading.Thread):
 
     def run(self):
         self.runnable()
+
 
 def flushlog():
     while True:
@@ -228,6 +208,7 @@ def flushlog():
             print("flushlog(): I/O operation failed, maybe lost some log")
             time.sleep(10)  # To avoid dead lock
             return 127
+
 
 def human_readable_size(nbytes):
     try:
@@ -246,14 +227,18 @@ def human_readable_size(nbytes):
     f = ('%.1f' % human).rstrip('0').rstrip('.')
     return '%s %s' % (f, suffixes[rank])
 
+
 def say_cmd(cmdlist, msg="All available commands:"):
         print (msg)
         if len(cmdlist) > 0:
             for c in sorted(cmdlist):
                 print ("  " + str(c))
 
+
 def say_not_implemented():
-    print("%sThis is planned, but not implemented yet.%s\n" % (CYAN_BOLD, OFF))
+    print("%sThis is planned, but not implemented yet.%s\n" %
+          (color.CYAN_BOLD, color.OFF))
+
 
 def save_history(historyPath=historyPath):
     f = open(historyPath, 'w')
@@ -264,23 +249,27 @@ def save_history(historyPath=historyPath):
         print(str(e))
     f.close()
 
+
 def str_to_class(s):
     import types
     if s in globals() and isinstance(globals()[s], types.ClassType):
         return globals()[s]
     return None
 
+
 def which(command):
     from distutils.spawn import find_executable
-    if find_executable(command, path=PATH) == None:
+    if find_executable(command, path=PATH) is None:
         return False
     else:
         return True
 
+
 def run_with_log():
     global fout
-    log_filename = path + '/%4d%02d%02d-%02d%02d%02d-' % time.localtime()[:-3] + \
-        os.getlogin() + '-' + command.strip().replace(' ', '-')
+    log_filename = path + '/%4d%02d%02d-%02d%02d%02d-' % \
+            time.localtime()[:-3] + os.getlogin() + '-' + \
+            command.strip().replace(' ', '-')
     fout = file(log_filename, "ab")
 
     # Begin log with timestamp
@@ -291,7 +280,7 @@ def run_with_log():
         if which(command.split()[0]):
             pass
         else:
-            print("The command %s%s%s is not usable, please notify your administrator." % (RED_BLINK, command.split()[0], OFF))
+            print("The command %s%s%s is not usable, please notify your administrator." % (color.RED_BLINK, command.split()[0], color.OFF))
             return 1
 
         thissession = pexpect.spawn('bash', ['-c', command])
@@ -317,7 +306,8 @@ def run_with_log():
     fout.write("### First command: %s\n" % command)
     try:
         if SHOW_WARN == 1:
-            print ("%sOperation logging started, have fun :)%s" % (RED, OFF))
+            print ("%sOperation logging started, have fun :)%s" %
+                   (color.RED, color.OFF))
     except NameError:
         pass
     try:
@@ -332,11 +322,12 @@ def run_with_log():
 
     try:
         if SHOW_WARN == 1:
-            print ("%sOperation logging stopped%s" % (RED, OFF))
+            print ("%sOperation logging stopped%s" % (color.RED, color.OFF))
     except NameError:
         pass
     fout.close()
     return 0
+
 
 def run_without_log(command):
     command_name = command.strip().split()[0]
@@ -358,7 +349,7 @@ def run_without_log(command):
     # Second, test if it's in PATH, return if not
     if which(command_name):
         pass    # goto try: part
-    elif FOUND_IN_MAP == True:
+    elif FOUND_IN_MAP is True:
         pass
     else:
         print("This function is not usable, please check it in PATH or l1_map: %s" % command)
@@ -373,20 +364,22 @@ def run_without_log(command):
         print("\r")
         return 0
 
+
 def do_auto():
     say_not_implemented()
-    print("""This function is intended to automatically config device with predefined
-template, such as logging, password, etc.
+    print("""This function is intended to automatically config device with
+          predefined template, such as logging, password, etc.
 """)
     return True
+
 
 def do_clear():
     os.system("clear")
 
+
 def do_dns():
     print("Not implemented yet")
-    return 1
-
+    return True
     sub = command.split()
     sub.reverse()
     # If no sub-command, print usable sub-command and return
@@ -394,9 +387,9 @@ def do_dns():
         say_cmd(dns_l2, msg="All available sub-commands:")
         return 1
     else:
-        l2cmd = sub.pop() # pop out 'show'
-
+        l2cmd = sub.pop()   # pop out 'show'
     l2cmd = sub.pop()
+
 
 def do_log():
     sub = command.split()
@@ -406,7 +399,7 @@ def do_log():
         say_cmd(log_l2, msg="All available sub-commands:")
         return 1
     else:
-        l2cmd = sub.pop() # pop out 'show'
+        l2cmd = sub.pop()   # pop out 'show'
 
     l2cmd = sub.pop()
     if l2cmd in log_del_comp:
@@ -428,10 +421,12 @@ def do_log():
             print("You don't have any log file.")
         else:
             print("Log files in %s:" % str(path))
-            print("%s Size  -  Date  - Time - User - CMD - Host%s" % (WHITE, OFF))
+            print("%s Size  -  Date  - Time - User - CMD - Host%s" %
+                  (color.WHITE, color.OFF))
             for f in files:
                 try:
-                    print("%s\t%s" % (human_readable_size(os.path.getsize(f)), str(os.path.basename(f))))
+                    print("%s\t%s" % (human_readable_size(os.path.getsize(f)),
+                                      str(os.path.basename(f))))
                 except Exception, e:
                     print(str(e))
 
@@ -446,9 +441,8 @@ def do_log():
 
         f = path + '/' + f
         if os.path.isfile(f):
-            os.system("less -r %s" % f) # buggy
+            os.system("less -r %s" % f)  # buggy
             return True
-
             # TODO: need rewrite
             with open(f) as fc:
                 for line in fc:
@@ -458,6 +452,7 @@ def do_log():
             return 1
     else:
         say_cmd(log_l2, msg="All available sub-commands:")
+
 
 def do_help():
     """终端快捷键：
@@ -486,18 +481,19 @@ def do_help():
         print string.replace(do_help.__doc__, '\n    ', '\n')
     except Exception, e:
         print(str(e))
-
     return 0
 
-def do_quit():
-    print ("%sSee you next time %s;)%s" % (CYAN_BOLD, BLINK, OFF))
 
-    # raise SystemExit
+def do_quit():
+    print ("%sSee you next time %s;)%s" %
+           (color.CYAN_BOLD, color.BLINK, color.OFF))
     os.exit()
+
 
 def do_shell():
     print("Permission denied")
-    return 1
+    return True
+
 
 def do_show():
     sub = command.split()
@@ -507,7 +503,7 @@ def do_show():
         say_cmd(show_l2, msg="All available sub-commands:")
         return 1
     else:
-        l2cmd = sub.pop() # pop out 'show'
+        l2cmd = sub.pop()   # pop out 'show'
 
     l2cmd = sub.pop()
     if l2cmd in show_history_comp:
@@ -545,17 +541,19 @@ def do_show():
     else:
         say_cmd(show_l2, msg="All available sub-commands:")
 
-def sigwinch_passthrough (sig, data):
+
+def sigwinch_passthrough(sig, data):
     # Check for buggy platforms (see pexpect.setwinsize()).
     if 'TIOCGWINSZ' in dir(termios):
         TIOCGWINSZ = termios.TIOCGWINSZ
     else:
-        TIOCGWINSZ = 1074295912 # assume
-    s = struct.pack ("HHHH", 0, 0, 0, 0)
-    a = struct.unpack ('HHHH', fcntl.ioctl(sys.stdout.fileno(), TIOCGWINSZ, s))
+        TIOCGWINSZ = 1074295912     # assume
+    s = struct.pack("HHHH", 0, 0, 0, 0)
+    a = struct.unpack('HHHH', fcntl.ioctl(sys.stdout.fileno(), TIOCGWINSZ, s))
     global global_pexpect_instance
     # print ("Windows size: %s x %s" % (a[0], a[1])) # debug
     global_pexpect_instance.setwinsize(a[0], a[1])
+
 
 def ttywrapper():
     # t = ANSI.term()
@@ -569,7 +567,7 @@ def ttywrapper():
         print(str(e))
 
     while 1:
-        readline.set_completer( MLCompleter(all_cmd).complete )
+        readline.set_completer(MLCompleter(all_cmd).complete)
 
         global command
         # Get input, and deal with exceptions
@@ -620,10 +618,12 @@ def ttywrapper():
                 if l1cmd in all_cmd:
                     say_not_implemented()
 
-                print("%sBad command:%s %s\n" % (RED_BG, OFF, command))
+                print("%sBad command:%s %s\n" %
+                      (color.RED_BG, color.OFF, command))
                 say_cmd(sorted(all_cmd))
         except (KeyboardInterrupt, EOFError):
             continue
+
 
 # History, automatically load on login, and save on exit.
 try:
@@ -634,9 +634,9 @@ except IOError:
 try:
     import atexit
     readline.set_history_length(historyLength)
-    atexit.register( readline.write_history_file, historyPath )
+    atexit.register(readline.write_history_file, historyPath)
 except Exception:
-    print("Error on register readline.write_history_file, won't save command history.")
+    print("Error on register history file, won't save command history.")
 
 if __name__ == "__main__":
     try:
@@ -644,5 +644,3 @@ if __name__ == "__main__":
     except (Exception, SystemExit):
         # After ttywrapper() exit, we get SystemExit exception here
         sys.exit()
-
-# vim: set sw=4 ts=4 expandtab:
