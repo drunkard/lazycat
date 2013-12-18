@@ -2,18 +2,23 @@ import logging
 from dm import get_host, login
 
 
-def roll_one_class(vendor, hosts, defaults):
+def roll_on_vendor(vendor):
+    from etc import dev
+    hosts_set_name = 'hosts_' + vendor
+    hosts = dev.__dict__[hosts_set_name]
     for host in hosts.keys():
-        roll_one_host(vendor, hosts, defaults, host)
+        roll_on_host(vendor, host)
 
 
-def roll_one_host(vendor, hosts, defaults, host):
-    device = get_host(vendor, hosts, defaults, host)
+def roll_on_host(vendor, host):
+    device = get_host(vendor, host)
     # Get a connected pexpect session of host
     s = login.connect(device)
     if s is False:
         logging.error('%s login failed' % device.name)
         return False
+    # Save this session as device attribute
+    device.session = s
     # Determine how to backup config, prefer upload via ftp
     from dm import save
     if hasattr(device, 'upload_config_command'):

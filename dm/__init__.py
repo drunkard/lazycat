@@ -3,24 +3,17 @@ Device management
 """
 import logging
 from functools import partial
-from dm import model
-from lib import hanzi2pinyin
 
 
 def backup_config():
     """backup config from network devices"""
     from etc import dev
-    from dm.backup import roll_one_class
+    from dm.backup import roll_on_vendor
     if not hasattr(dev, 'supported_class'):
         return False
     # Roll all supported classes
-    for c in dev.supported_class:
-        hosts_set_name = 'hosts_' + c
-        defaults_set_name = 'default_' + c
-        defaults = dev.__dict__[defaults_set_name]
-        hosts = dev.__dict__[hosts_set_name]
-        vendor = c
-        roll_one_class(vendor, hosts, defaults)
+    for vendor in dev.supported_class:
+        roll_on_vendor(vendor)
 
 
 def check_attr(device, attrlist):
@@ -43,6 +36,7 @@ def fix_commands(device_dict):
             'RC_FTP_SERVER_ADDR_RC' with FTP_SERVER_ADDR
     """
     from dm.model import has_vars
+    from lib import hanzi2pinyin
     # Convert Chinese characters to PinYin
     device_dict['name_lingus'] = device_dict['name']
     device_dict['name_en'] = hanzi2pinyin(device_dict['name'])
@@ -54,34 +48,35 @@ def fix_commands(device_dict):
     return device_dict
 
 
-def get_host(vendor, hosts, defaults, host_name):
+def get_host(vendor, host_name):
     """Get all information of a host by host_name, the information comes from:
         etc.dev.default_"vendor"
         etc.dev.hosts_"vendor"
         dm.model."vendor"
     merge them, then convert this dict to a host object.
     """
-    host_info = hosts.get(host_name)
-    # Add vendor key
-    host_info = dict(host_info, **{'vendor': vendor})
+    from dm import model
+    from etc import dev
+    defaults = dev.__dict__['default_' + vendor]
+    hosts = dev.__dict__['hosts_' + vendor]
     # Retrieve per host settings
+    host_info = hosts.get(host_name)
     if host_info is None:
         logging.error('%s no such host in hosts_%s' % (host_name, vendor))
         return None
     logging.debug("%s got per host setting" % (host_name))
 
+    # Add vendor key
+    host_info = dict(host_info, **{'vendor': vendor})
+
     # Retrieve vendor defaults in etc.dev, then merge to host_info
-    host_info = dict(defaults, **host_info)
-    logging.debug("%s applied default config from etc.dev with name: %s" %
+    logging.debug("%s applying defaults in etc.dev.%s" %
                   (host_name, 'default_' + vendor))
+    host_info = dict(defaults, **host_info)
 
     # Retrieve vendor defaults im dm.model, then merge to host_info
-    for i in dir(model):
-        if i == vendor:
-            host_info = dict(model.__dict__[vendor].__dict__, **host_info)
-            break
-    logging.debug("%s applied default config from dm.model with name: %s" %
-                  (host_name, vendor))
+    logging.debug("%s applying defaults in dm.model.%s" % (host_name, vendor))
+    host_info = dict(model.__dict__[vendor].__dict__, **host_info)
 
     # TODO: update device.admin with config in etc.admin
     # Replace variables with setting in etc.lazycat_conf
