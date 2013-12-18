@@ -17,7 +17,12 @@ def backup_config():
 
 
 def check_attr(device, attrlist):
-    """Check if all attributes in list exists"""
+    """Check if all attributes in list exists
+    Usage:
+    checks = []
+    if not dm.check_attr(device, checks):
+        return False
+    """
     for i in attrlist:
         if not hasattr(device, i):
             logging.error('%s lacks setting: %s' % (device.name, i))

@@ -13,18 +13,16 @@ def roll_on_vendor(vendor):
 def roll_on_host(vendor, host):
     device = get_host(vendor, host)
     # Get a connected pexpect session of host
-    s = login.connect(device)
-    if s is False:
+    device.session = login.connect(device)
+    if device.session is False:
         logging.error('%s login failed' % device.name)
         return False
-    # Save this session as device attribute
-    device.session = s
     # Determine how to backup config, prefer upload via ftp
     from dm import save
     if hasattr(device, 'upload_config_command'):
-        save.upload_via_ftp(device, s)
+        save.upload_via_ftp(device)
     elif hasattr(device, 'show_config_command'):
-        save.show_config(device, s)
+        save.show_config(device)
     else:
         logging.fatal('%s don\'t know how to save config')
         return False
