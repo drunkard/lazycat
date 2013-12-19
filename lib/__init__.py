@@ -15,3 +15,9 @@ def hanzi2pinyin(hanzi):
             continue
         pinyin += p.get_pinyin(i).title()
     return pinyin
+
+
+def random_char(y):
+    import string
+    from random import choice
+    return ''.join(choice(string.ascii_letters) for x in range(y))

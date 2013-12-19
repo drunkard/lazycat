@@ -60,6 +60,9 @@ def fix_commands(device_dict):
     device_dict['name_en'] = hanzi2pinyin(device_dict['name'])
     # Replace variables with settings
     for k in has_vars:
+        # Skip if there's no such attribute
+        if k not in device_dict.keys():
+            continue
         device_dict[k] = replace_var_in_cmd(device_dict, k)
         logging.debug('%s fix_commands %s="%s"' %
                       (device_dict['name'], k, device_dict[k]))
@@ -105,16 +108,11 @@ def get_host(vendor, host_name):
     return dev
 
 
-def random_char(y):
-    import string
-    from random import choice
-    return ''.join(choice(string.ascii_letters) for x in range(y))
-
-
 def replace_var_in_cmd(device_dict, cmdname):
     """Replace those variables (named RC_*_RC) with settings in
     etc.lazycat_conf or host attribute.
     """
+    from re import sub
     from etc import lazycat_conf
     from dm.model import should_be_replaced
     for var in should_be_replaced:
@@ -135,10 +133,10 @@ def replace_var_in_cmd(device_dict, cmdname):
             # If dont raise exception, may mis-operate network device, so do it
             # carefully.
             raise KeyError
-    return ' '.join(device_dict[cmdname].split())
+    return sub('\ +', ' ', device_dict[cmdname])
 
 
 def show_terminal(session):
     """show all contents of session.before in pexpect session"""
-    for line in session.before.decode().splitlines():
+    for line in (session.before + session.after).decode().splitlines():
         print(line)
