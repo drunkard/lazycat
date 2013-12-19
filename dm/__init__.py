@@ -16,8 +16,13 @@ def backup_config():
     ftp_server = ftp.server()
     if not ftp_server.start():
         return False
+    # Give test_class higher priority, for testing
+    if hasattr(dev, 'test_class') and dev.test_class != []:
+        c = dev.test_class
+    elif hasattr(dev, 'supported_class'):
+        c = dev.supported_class
     # Roll all supported classes
-    for vendor in dev.supported_class:
+    for vendor in c:
         roll_on_vendor(vendor)
     # Stop FTP server
     ftp_server.stop()
