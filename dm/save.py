@@ -11,26 +11,25 @@ from dm import show_terminal
 
 def fix_paths(device):
     """Fix ftp server side paths"""
-    from etc.lazycat_conf import DEVCONF_BACKUP_PATH, FTP_USER
-    fp = os.path.join(DEVCONF_BACKUP_PATH, device.vendor)
-    if os.path.isdir(fp):
+    from etc.lazycat_conf import DEVCONF_BACKUP_PATH, FTP_USER, FTP_RO_USER
+    device.upload_abs_path = os.path.join(DEVCONF_BACKUP_PATH,
+                                          device.upload_filename)
+    p = os.path.join(DEVCONF_BACKUP_PATH, device.vendor)
+    device.upload_path = p
+    if os.path.isdir(p):
         pass
     else:
-        logging.debug("%s mkdir: %s" % (device.name, fp))
-        if not os.makedirs(fp):
-            logging.error('%s mkdir failed: %s' % (device.name, fp))
+        logging.debug("%s mkdir: %s" % (device.name, p))
+        if not os.makedirs(p):
+            logging.error('%s mkdir failed: %s' % (device.name, p))
             return False
         # Fix perms
         from pwd import getpwnam
         uid = getpwnam(FTP_USER).pw_uid
-        gid = getpwnam(FTP_USER).pw_gid
-        if not os.chown(fp, uid, gid):
-            logging.error('%s chown failed: %s' % (device.name, fp))
+        gid = getpwnam(FTP_RO_USER).pw_gid
+        if not os.chown(p, uid, gid):
+            logging.error('%s chown failed: %s' % (device.name, p))
             return False
-    device.upload_cur_fpath = os.path.join(DEVCONF_BACKUP_PATH,
-                                           device.upload_filename)
-    device.upload_dst_fpath = os.path.join(fp, device.upload_filename)
-    device.upload_path = fp
     return True
 
 
@@ -50,16 +49,12 @@ def pre_proc(device):
 
 def post_proc(device):
     """Post-processes after successfully uploaded config"""
-    from shutil import move
-    # FTP server will delete upload failure files
-    if not os.path.isfile(device.upload_cur_fpath):
+    if os.path.isfile(device.upload_abs_path):
+        git_commit(device.upload_abs_path)
+    else:
+        # FTP server will delete upload failure files
         logging.error('%s upload failed, file frag removed' % device.name)
         return False
-    if move(device.upload_cur_fpath, device.upload_dst_fpath):
-        git_commit(device.upload_dst_fpath)
-    del device.upload_cur_fpath
-    del device.upload_dst_fpath
-    del device.upload_path
 
 
 def save_running_config(device):
@@ -146,25 +141,53 @@ def show_config(device):
     return device.session
 
 
-def upload_via_ftp(device):
-    """Start a FTP server and upload startup.cfg on device"""
-    if not hasattr(device, 'upload_config_command'):
+def upload_greenway_onu_profile(device):
+    """Upload onu-profile on Greenway OLT"""
+    if not hasattr(device, 'upload_config_command2'):
         return False
-    pre_proc(device)
-    # upload now via pexpect session
-    upload_command = device.upload_config_command
-    logging.error('%s uploading config: %s' % (device.name, upload_command))
-    device.session.sendline(upload_command)
-    i = device.session.expect([device.upload_config_ok_hint,
-                               device.upload_config_fail_hint,
-                               device.upload_config_command_wrong,
-                               pexpect.TIMEOUT])
+    s = device.session
+    cmd = device.upload_config_command2
+    s.sendline(cmd)
+    logging.error('%s exec command: %s' % (device.name, cmd))
+    i = s.expect([device.upload_config_ok_hint, device.upload_config_fail_hint,
+                  device.upload_config_command_wrong, pexpect.TIMEOUT])
     if i == 0:
-        logging.warn('%s ftp: uploaded config successfully' % device.name)
+        logging.warn('%s ftp: upload onu-profile ok' % device.name)
+    elif i == 1:
+        logging.error('%s ftp: upload onu-profile failed' % device.name)
+    elif i == 2:
+        logging.error('%s upload onu-profile command is wrong' % device.name)
+    elif i == 3:
+        logging.error('%s ERROR: upload onu-profile timeout' % device.name)
+
+
+def upload_by_upload_cmd(device):
+    """Upload device config using builtin 'upload ...' command, which
+    supports ftp."""
+    # upload now via pexpect session
+    s = device.session
+    cmd = device.upload_config_command
+    logging.error('%s exec command: %s' % (device.name, cmd))
+    s.sendline(cmd)
+    i = s.expect([device.upload_config_ok_hint, device.upload_config_fail_hint,
+                 device.upload_config_command_wrong, pexpect.TIMEOUT])
+    if i == 0:
+        logging.warn('%s ftp: upload config ok' % device.name)
     elif i == 1:
         logging.error('%s ftp: upload config failed' % device.name)
     elif i == 2:
         logging.error('%s upload command is wrong' % device.name)
     elif i == 3:
         logging.error('%s ERROR: upload timeout' % device.name)
+    # Also backup onu-profile on greenway OLT
+    if device.vendor == 'greenway':
+        upload_greenway_onu_profile(device)
+
+
+def upload_via_ftp(device):
+    """Start a FTP server and upload startup.cfg on device"""
+    if not hasattr(device, 'upload_config_command'):
+        return False
+    pre_proc(device)
+    upload_by_upload_cmd(device)
     post_proc(device)

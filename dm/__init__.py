@@ -2,6 +2,7 @@
 Device management
 """
 import logging
+import os
 from functools import partial
 from dm import ftp
 
@@ -121,7 +122,8 @@ def replace_var_in_cmd(device_dict, cmdname):
         vinc = 'RC_' + var + '_RC'
         logging.debug('  replacing %s' % var)
         if var == 'NAME':
-            device_dict[cmdname] = v.replace(vinc, device_dict['name_en'])
+            fp = os.path.join(device_dict['vendor'], device_dict['name_en'])
+            device_dict[cmdname] = v.replace(vinc, fp)
             continue
         elif var == 'IP':
             device_dict[cmdname] = v.replace(vinc, device_dict['ip'])

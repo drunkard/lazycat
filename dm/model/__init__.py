@@ -36,6 +36,7 @@ all_vendor = [
 # dm.fix_commands() will replace variables listed list
 has_vars = [
     'upload_config_command',
+    'upload_config_command2',
     'upload_filename',
 ]
 should_be_replaced = [

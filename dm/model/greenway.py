@@ -17,6 +17,7 @@ prompt = '>'
 escalating_needed = [
     'show_config_command',
     'upload_config_command'
+    'upload_config_command2'
 ]
 escalating_going = 0        # we are escalating privilege
 escalating_command = 'enable'
@@ -53,9 +54,11 @@ show_config_next_page = 'n'
 # upload config file related things
 upload_config_need_escalating = 1
 # Args: FTP_SERVER_ADDR, FTP_USER, FTP_PASSWORD, device.ip, device.name
-upload_filename = 'RC_IP_RC--RC_NAME_RC.cfg'
+upload_filename = 'RC_NAME_RC--RC_IP_RC.cfg'
 upload_config_command = 'upload ftp config RC_FTP_SERVER_ADDR_RC \
         RC_FTP_USER_RC RC_FTP_PASSWORD_RC ' + upload_filename
-upload_config_command_wrong = 'Unknown command'
+upload_config_command2 = 'upload ftp onu-profile RC_FTP_SERVER_ADDR_RC \
+        RC_FTP_USER_RC RC_FTP_PASSWORD_RC ' + upload_filename + '-onu-profile'
+upload_config_command_wrong = r'(Unknown command|Command incomplete)'
 upload_config_ok_hint = 'Upload file ...ok'
 upload_config_fail_hint = 'Upload file ...failed'

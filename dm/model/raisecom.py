@@ -53,7 +53,7 @@ show_config_next_page = ' '
 # upload config file related things
 upload_config_need_escalating = 1
 # Args: FTP_SERVER_ADDR, FTP_USER, FTP_PASSWORD, device.ip, device.name
-upload_filename = 'RC_IP_RC--RC_NAME_RC.cfg'
+upload_filename = 'RC_NAME_RC--RC_IP_RC.cfg'
 upload_config_command = 'upload startup-config ftp RC_FTP_SERVER_ADDR_RC \
         RC_FTP_USER_RC RC_FTP_PASSWORD_RC ' + upload_filename
 upload_config_command_wrong = 'Unknown command'
