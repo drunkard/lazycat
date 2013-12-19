@@ -52,6 +52,9 @@ class server:
     def ready_server(self, start=1):
         """start/stop a ready outer FTP server"""
         if start == 0:
+            # Server has been stopped
+            if os.system('pgrep %s' % self.ftp_server_name) == 256:
+                return True
             if os.system('/etc/init.d/%s --nodeps stop &>/dev/null' %
                          self.ftp_server_name):
                 logging.error('stop vsftpd failed')
@@ -60,6 +63,9 @@ class server:
                 logging.debug('stop vsftpd ok')
                 return True
         if start == 1:
+            # Server has been started
+            if os.system('pgrep %s' % self.ftp_server_name) == 0:
+                return True
             if os.system('/etc/init.d/%s --nodeps start &>/dev/null' %
                          self.ftp_server_name):
                 logging.error('start vsftpd failed, abort')
