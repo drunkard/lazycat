@@ -22,9 +22,13 @@ DEBUG_FG = 0    # 0|1
 # connect it.
 FTP_SERVER_ADDR = '10.0.0.1'
 FTP_PORT = 21
+# Write only account is used for uploading config-file or ROM
 FTP_USER = 'upload'
 FTP_PASSWORD = 'upload12345'
 FTP_USER_PERM = 'edw'   # write only
+# Readonly ftp account is used for users to download config-file or ROM
+FTP_RO_USER = 'readonly'
+FTP_RO_USER_PERM = ''   # readonly
 FTP_DATA = DEVCONF_BACKUP_PATH
 FTP_TIMEOUT = 600       # seconds, stop after idle for this interval
 # For security, this system uses a customed disposable FTP server with
