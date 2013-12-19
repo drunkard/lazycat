@@ -1,24 +1,31 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
-
 """This program is a pseudo-shell and gives the user interactive control.
 The entire ssh/telnet session is logged to a file, others won't be logged.
 """
 
+import glob
+import os
+import readline
+import string
+import sys
+import threading
+import time
+from socket import gethostname
+
+import signal
+import fcntl
+import termios
+import struct
+
 try:
-    import glob, string
-    import os, sys, time
-    import signal, fcntl, termios, struct
     # import ANSI
-    import threading
     import pexpect
-    import readline
     # import rlcompleter2
     # import IPython.core.completer as completer
-    from socket import gethostname
     from lib import color
 except ImportError, e:
-    raise ImportError (str(e) + """\033[05;37;41m
+    raise ImportError(str(e) + """\033[05;37;41m
 
 A critical module was not found. Probably this operating system does not
 support it. Pexpect is intended for UNIX-like operating systems.\033[0m""")
@@ -29,7 +36,6 @@ __version__ = "0.1"
 __productname__ = "lazycat"
 __description__ = "A pseudo shell with restricted capability for AAA purpose."
 
-DEBUG = 0
 PATH = '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
 historyLength = 1000
 historyPath = os.path.expanduser('~/.' + __productname__ + '_history')
@@ -144,7 +150,8 @@ path = os.environ.get('HOME') + '/%4d%02d%02d' % time.localtime()[:-6]
 if not os.path.isdir(path):
     os.makedirs(path)
 flush_interval = 10
-title = os.getlogin() + "@" + gethostname(); del gethostname
+title = os.getlogin() + "@" + gethostname()
+del gethostname
 global_pexpect_instance = None  # Used by signal handler
 
 
@@ -199,7 +206,7 @@ def flushlog():
     while True:
         try:
             # Add timestamp
-            fout.write ('\n### %4d-%02d-%02dT%02d:%02d:%02d ' % time.localtime()[:-3] + title + "\n")
+            fout.write('\n### %4d-%02d-%02dT%02d:%02d:%02d ' % time.localtime()[:-3] + title + "\n")
             fout.flush()  # flush back to file
             time.sleep(flush_interval)
         except ValueError:
