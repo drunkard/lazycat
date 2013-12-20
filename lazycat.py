@@ -5,6 +5,7 @@ The entire ssh/telnet session is logged to a file, others won't be logged.
 """
 
 import glob
+import math
 import os
 import readline
 import string
@@ -218,16 +219,9 @@ def flushlog():
 
 
 def human_readable_size(nbytes):
-    try:
-        import math
-    except ImportError:
-        print("Python module import error in human_readable_size()")
-
     suffixes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
-
     if nbytes == 0:
         return '0 B'
-
     rank = int((math.log10(nbytes)) / 3)
     rank = min(rank, len(suffixes) - 1)
     human = nbytes / (1024.0 ** rank)
@@ -287,7 +281,7 @@ def run_with_log():
         if which(command.split()[0]):
             pass
         else:
-            print("The command %s%s%s is not usable, please notify your administrator." % (color.RED_BLINK, command.split()[0], color.OFF))
+            print("System command %s%s%s is not usable, please notify administrator." % (color.RED_BLINK, command.split()[0], color.OFF))
             return 1
 
         thissession = pexpect.spawn('bash', ['-c', command])
