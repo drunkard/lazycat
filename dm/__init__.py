@@ -120,6 +120,9 @@ def replace_var_in_cmd(device_dict, cmdname):
         vinc = 'RC_' + var + '_RC'
         logging.debug('  replacing %s' % var)
         if var == 'NAME':
+            # Rename filename to 'vendor' + filename, because chrooted ftp
+            # disallows user to upload file to root of HOME, and the HOME must
+            # not writable to this chrooted user.
             fp = os.path.join(device_dict['vendor'], device_dict['name_en'])
             device_dict[cmdname] = v.replace(vinc, fp)
             continue

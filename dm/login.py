@@ -12,14 +12,15 @@ def input_username(device):
     if not dm.check_attr(device, checks):
         return False
     # Check prompt
-    i = s.expect([device.username_hint, device.password_hint,
-                  pexpect.TIMEOUT, 'No route to host'])
-    logging.debug('%s expecting: username_hint=%s or password_hint=%s' %
+    i = s.expect([device.username_hint, device.password_hint, pexpect.TIMEOUT,
+                  r'(No route to host|Connection closed|Connection refused)'])
+    logging.debug('%s expecting: username_hint: %s or password_hint: %s' %
                   (device.name, device.username_hint, device.password_hint))
     if i == 0:
+        logging.debug('%s got username_hint' % device.name)
         pass
     elif i == 1:
-        logging.info('%s dont need username' % device.name)
+        logging.debug('%s don\'t need username' % device.name)
         return s
     elif i == 2 or i == 3:
         logging.error('%s input_username: abort on errors, ip: %s' %
@@ -27,10 +28,11 @@ def input_username(device):
         return False
     # Input username
     s.sendline(device.username)
+    logging.debug('%s sent username: %s' % (device.name, device.username))
     i = s.expect([device.password_hint])
-    logging.debug('%s expecting: password_hint=%s' %
-                  (device.name, device.password_hint))
     if i == 0:
+        logging.debug('%s got password_hint: %s' %
+                      (device.name, device.password_hint))
         return s
     logging.warning("%s input_username failed" % device.name)
     return False
@@ -51,13 +53,14 @@ def input_password(device):
     logging.debug('%s sent password: %s' % (device.name, device.password))
     i = s.expect([device.escalated_prompt, device.prompt,
                   device.password_wrong])
-    logging.debug('%s expecting: prompt=%s password_wrong=%s' %
+    logging.debug('%s expecting: prompt: %s password_wrong: %s' %
                   (device.name, device.prompt, device.password_wrong))
     if i == 0:
         logging.debug('%s got escalated_prompt, dont need escalating anymore' %
                       device.name)
         device.escalated = 1
     elif i == 1:
+        logging.debug('%s got prompt: %s' % (device.name, device.prompt))
         pass
     elif i == 2:
         logging.error('%s ERROR: wrong password' % device.name)
@@ -80,9 +83,9 @@ def input_escalate_command(device):
     if not dm.check_attr(device, checks):
         return False
 
-    s.sendline(device.escalating_command)
-    logging.warning('%s exec escalate command: %s' %
-                    (device.name, device.escalating_command))
+    cmd = device.escalating_command
+    s.sendline(cmd)
+    logging.warning('%s exec escalate command: %s' % (device.name, cmd))
     if device.escalating_conflict_hint == '':
         i = s.expect([device.escalating_hint, device.escalated_prompt])
     else:
@@ -123,7 +126,7 @@ def input_escalate_password(device):
     if not dm.check_attr(device, checks):
         return False
 
-    logging.debug('%s input escalate password: pwd=%s prompt=%s pwd_wrong=%s' %
+    logging.debug('%s input escalate password: %s prompt: %s pwd_wrong: %s' %
                   (device.name, device.escalating_password,
                    device.escalated_prompt, device.escalating_password_wrong))
     s.sendline(device.escalating_password)
@@ -134,17 +137,18 @@ def input_escalate_password(device):
         i = s.expect([device.escalated_prompt,
                       device.escalating_password_wrong])
     else:
-        i = s.expect([device.escalated_prompt, device.escalating_conflict_hint,
-                      device.escalating_password_wrong])
+        i = s.expect([device.escalated_prompt,
+                      device.escalating_password_wrong,
+                      device.escalating_conflict_hint])
     if i == 0:
         logging.debug('%s input_escalate_password ok, returning' % device.name)
         device.escalated = 1
         del device.input_escalate_command_done
         return s
     elif i == 1:
-        logging.error('%s ERROR: escalating conflicted' % device.name)
-    elif i == 2:
         logging.error('%s ERROR: wrong password' % device.name)
+    elif i == 2:
+        logging.error('%s ERROR: escalating conflicted' % device.name)
     return False
 
 

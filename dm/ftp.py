@@ -6,8 +6,8 @@ class server:
     """Custom FTP server used to serve users."""
     def __init__(self):
         """Read config arguments"""
-        from dm import random_char
         from etc import lazycat_conf
+        from lib import random_char
         self.user = random_char(3)
         self.password = random_char(3)
         self.perm = lazycat_conf.FTP_USER_PERM
@@ -53,7 +53,7 @@ class server:
         """start/stop a ready outer FTP server"""
         if start == 0:
             # Server has been stopped
-            if os.system('pgrep %s' % self.ftp_server_name) == 256:
+            if os.system('pgrep %s >/dev/null' % self.ftp_server_name) == 256:
                 return True
             if os.system('/etc/init.d/%s --nodeps stop &>/dev/null' %
                          self.ftp_server_name):
@@ -64,7 +64,7 @@ class server:
                 return True
         if start == 1:
             # Server has been started
-            if os.system('pgrep %s' % self.ftp_server_name) == 0:
+            if os.system('pgrep %s >/dev/null' % self.ftp_server_name) == 0:
                 return True
             if os.system('/etc/init.d/%s --nodeps start &>/dev/null' %
                          self.ftp_server_name):

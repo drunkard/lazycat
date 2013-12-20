@@ -2,9 +2,9 @@
 # from dm.model import cisco
 # from dm.model import dowslake
 from dm.model import greenway
-# from dm.model import h3c
+from dm.model import h3c
 # from dm.model import hillstone
-# from dm.model import huawei
+from dm.model import huawei
 # from dm.model import juniper
 # from dm.model import linux
 from dm.model import raisecom

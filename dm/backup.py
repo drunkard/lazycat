@@ -10,7 +10,7 @@ def roll_on_vendor(vendor):
         try:
             roll_on_host(vendor, host)
         except Exception as e:
-            logging.fatal('%s catched exception while rolling: %s' % (host, e))
+            logging.fatal('%s caught exception while rolling: %s' % (host, e))
 
 
 def roll_on_host(vendor, host):
