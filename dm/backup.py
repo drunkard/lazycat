@@ -6,8 +6,11 @@ def roll_on_vendor(vendor):
     from etc import dev
     hosts_set_name = 'hosts_' + vendor
     hosts = dev.__dict__[hosts_set_name]
-    for host in hosts.keys():
-        roll_on_host(vendor, host)
+    for host in sorted(hosts.keys()):
+        try:
+            roll_on_host(vendor, host)
+        except Exception as e:
+            logging.fatal('%s catched exception while rolling: %s' % (host, e))
 
 
 def roll_on_host(vendor, host):
