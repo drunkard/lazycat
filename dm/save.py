@@ -243,11 +243,11 @@ def upload_huawei_config(device):
         logging.debug('%s sent in ftp view: open %s' % (device.name,
                                                         device.ip))
     # Input ftp username
-    i = s.expect([r'User.*:', 'Error: Failed to connect'])
+    i = s.expect([r'User.*:', 'Error: Failed to connect', pexpect.TIMEOUT])
     if i == 0:
         s.sendline(FTP_USER)
         logging.debug('%s sent in ftp view: ftp username' % device.name)
-    elif i == 1:
+    elif i in [1, 2]:
         logging.error('%s connect ftp server failed' % device.name)
         return False
     # Input ftp password

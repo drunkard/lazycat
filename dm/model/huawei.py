@@ -41,7 +41,10 @@ exit_os = 'quit'
 # save config
 save_config_need_confirm = 1
 save_config_command = 'save'
-save_config_ok_hint = 'Save the configuration successfully'
+# For S9306: Succeeded in saving the current configuration to the device.
+# For S5700: Save the configuration successfully
+# For S5300: The current configuration was saved to the device successfully.
+save_config_ok_hint = r'(successfully|Succeeded in saving)'
 save_config_fail_hint = 'fail'   # not confirmed
 
 

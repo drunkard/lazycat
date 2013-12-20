@@ -13,7 +13,8 @@ def input_username(device):
         return False
     # Check prompt
     i = s.expect([device.username_hint, device.password_hint, pexpect.TIMEOUT,
-                  r'(No route to host|Connection closed|Connection refused)'])
+                  'No route to host',
+                  r'Connection (closed|refused|timed out)'])
     logging.debug('%s expecting: username_hint: %s or password_hint: %s' %
                   (device.name, device.username_hint, device.password_hint))
     if i == 0:
@@ -22,8 +23,8 @@ def input_username(device):
     elif i == 1:
         logging.debug('%s don\'t need username' % device.name)
         return s
-    elif i == 2 or i == 3:
-        logging.error('%s input_username: abort on errors, ip: %s' %
+    elif i in [2, 3, 4]:
+        logging.error('%s ERROR: connect aborted, ip: %s' %
                       (device.name, device.ip))
         return False
     # Input username
@@ -146,7 +147,7 @@ def input_escalate_password(device):
         del device.input_escalate_command_done
         return s
     elif i == 1:
-        logging.error('%s ERROR: wrong password' % device.name)
+        logging.error('%s ERROR: wrong escalating password' % device.name)
     elif i == 2:
         logging.error('%s ERROR: escalating conflicted' % device.name)
     return False

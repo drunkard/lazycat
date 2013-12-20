@@ -20,7 +20,7 @@ def roll_on_host(vendor, host):
     device.session = login.connect(device)
     if device.session is False:
         logging.error('%s login failed' % device.name)
-        r = False
+        return False
     # Determine how to backup config, prefer upload via ftp
     from dm import save
     if hasattr(device, 'upload_config_command'):
@@ -30,5 +30,10 @@ def roll_on_host(vendor, host):
     else:
         logging.fatal('%s don\'t know how to save config')
         r = False
-    device.session.terminate()
+    # Terminate telnet session
+    if device.session is False:
+        r = False
+    else:
+        device.session.terminate()
+        r = True
     return r
