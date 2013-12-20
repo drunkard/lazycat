@@ -26,7 +26,7 @@ def backup_config():
     for vendor in c:
         roll_on_vendor(vendor)
     # Stop FTP server
-    ftp_server.stop()
+    # ftp_server.stop()
 
 
 def check_attr(device, attrlist):
