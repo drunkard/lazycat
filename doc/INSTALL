@@ -1,0 +1,50 @@
+Not for standard installation now, just clone my git repository and fulfill
+dependencies.
+
+git clone git://github.com/drunkard/lazycat.git
+
+
+===========
+DESCRIPTION
+===========
+This project includes multiple sub-projects that ease management of ISP
+network for network administrators. For now, they are independent partly, I
+will join them together day by day. my python skill is poor, but improving ...
+
+The most important sub-projects are:
+
+ lazycat
+ 	pseudo shell with accounting function, it will be uniq and
+  	easy entry to this whole project
+
+ devconf
+ 	automatically backup network device config files, and commit
+	them into git repository if differs
+	Will be removed after merged into dm (device management)
+
+ devlog
+	receive and filter log from network devices, and archive;
+	Filter messages by regex, then email to groups of admins.
+
+And, this project is pure python 3 wrote, does not intend to support python 2.
+
+
+============
+DEPENDENCIES
+============
+ lazycat
+	pexpect, 3.0 and above which supports python 3
+	signal, fcntl, termios, struct
+	threading
+	readline
+	socket
+
+ devconf
+	pexpect, 3.0 and above which supports python 3
+	functools, builtin in python 3
+	telnet / ssh, tools
+	pyftpdlib, need a ftp server while backup device configs
+	pygit2, used to automatically commit changes into git repo
+	# vsftpd
+	useradd -m -c "FTP user upload devconf" -s /sbin/nologin -d /data/lazycat/devconf/ up
+	useradd -m -c "FTP user readonly" -s /sbin/nologin -d /data/lazycat/devconf/ ro

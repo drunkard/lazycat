@@ -1,6 +1,13 @@
 *.pyc
 *.pyo
 __pycache__
+*.dia~
+*.zip
 
+# Avoid config into git repository
+etc/dev.py
+etc/lazycat_conf.py
+
+# External libs
 lib/tratto
 lib/xpinyin-github

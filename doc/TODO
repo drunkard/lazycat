@@ -1,0 +1,115 @@
+'device-management' - network device config management. sub enviroment, does these things:
+	manages config policies to automatically retrieve config from network devices
+	save it locally
+	save config on remote device
+	git commit the different config into git repo, which could be shown on web, password safety
+
+	commands:
+	host vendor 'vendor' name 'name' ip 'ip'
+	remove host name 'name'
+	remove host ip 'ip'
+	# Check tasklets
+	check hostname all	# 检查设备命名是否规范
+	check hostname 'name'
+	check hostname vendor 'vendor'
+	check config syslog
+	check config onu-bandwidth
+	commit-config running 'name'
+	commit-config saved 'name'
+	detect-difference 'name'
+	restore SHA-ID to 'name'	# 把配置恢复到设备, 通过ftp ?
+	mailto 'email' SHA-ID	# named after @gwbnsh.net.cn | @shpbs.com
+	show commit-status [failures|succeeded]
+	show commit-status vendor 'vendor-name' [failures|succeeded]
+		本地名	拼音		时间		状态	原因
+		杨浦-2	YangPu-2	12-18 01:10:11	OK
+		杨浦-1	YangPu-1	12-18 01:11:12	FAIL	Password wrong
+	# 可能的原因:
+		Password wrong
+		Escalating password wrong
+		Connect timeout(telnet)
+		Escalating conflicted
+		Unknown
+	show history 'name' all
+	show history 'name'		# 默认显示5个
+	show history all
+		本地名	拼音		时间		SHA-ID
+		杨浦-2	YangPu-2	12-18 01:10:11	0ef253
+	show jobs
+	show stats by vendor
+		Vendor		Total		Alive		Dead
+		H3C		61		60		1
+	job commit daily 3:01
+	job commit weekly sunday 3:01
+	job commit monthly 1 3:01
+	job commit-once 2013-12-19 3:30
+
+
+'ftp'	# FTP function management
+
+	start server type [upload|download]
+	restart server type [upload|download]
+	stop server
+	show server information
+
+
+BUG:
+'log view'
+	does not have a good pager
+	control code (from ssh, htop/atop) is kind hard to strip for me, by now.
+
+Features to impletion:
+DNS problem diag, at least include these commands:
+dns list		List our DNS, name and IP
+  	list-views	List views on our DNS, and query-source used to test for each view
+  	resolve		Resolve the gave name from our DNS
+	public-resolve	Resolve the gave name from famous public DNS
+	reverse-resolve	Resolve IP address to domain name, so called ARPA
+
+Multi-level or tree struct privilege control, which limits user capibility.
+
+Store password or other critical data into encrypted loop back file, both usable for global or single user? This must be implemented before store password on server.
+
+
+'user'	# manages users, this should be manage users across multiple hosts.
+
+	add
+	del
+	disable
+	disable at 'some time'
+	enable
+
+
+'session'	# this feature need mature pexpect code:
+	With acl to control privilege, the lazycat will enter password for user automatically using pexpect.
+
+A lot network device's config have same section on one function's config, like logging on H3C switches, almost all devices shares the same configs.
+	logging config on devices
+	ONU auto register
+	privilege config on devices
+
+Network trouble auto diag. Need to receive and parse logs from these devices. and then respond. Warn on administrator more precisely.
+
+Auto backup device config, add them into git repository, showing the difference via web/client.
+
+*nix server health check, do dns/squid first.
+
+Add more interface, like web/GUI client, only CLI via ssh available now :(
+
+'sessions list' shows current active telnet/ssh sessions, and someone can make request to observe others' session, when the session owner accepted, the requester can now do readonly observing, or even take charge the session, but it should be exclusive. It's too danger to operating the same vehicle in same time!
+session>
+	list	# replace 'show user', and TAGed each session with a short random key
+	list telnet
+	list ssh
+	list idle
+	kick TAG		# kick some user
+	pause TAG		# pause session, by admin
+	observe TAG		# observe in a window, there's cmdline below
+	wait-for TAG		# wait for a exclusive session, take it when other quit
+	share-from		# take charge of one session
+	share-to
+	say-to TAG		# say something to that session, receive from a TUI text block
+	connect HostName	# auto login to host, password-less
+	exit
+
+Anyway, it faces to general network administrator, and gonna be simplify their work a lot. At least I hope so ;)
