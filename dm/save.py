@@ -91,7 +91,7 @@ def post_proc_huawei(device):
     import zipfile
     p = device.upload_path
     uf = device.upload_abs_path
-    nameprefix = device.name_en + '--' + device.ip + '--'
+    nameprefix = device.name_en + '--' + device.ip
     # unzip
     if not os.path.isfile(uf):
         logging.error('%s upload failed, skip unzip' % device.name)
@@ -99,8 +99,8 @@ def post_proc_huawei(device):
     zf = zipfile.ZipFile(uf, mode='r')
     logging.debug('%s unzip uploaded file: %s' % (device.name, uf))
     zf.extractall(path=p)
-    # Rename zip like this: vrpcfg.zip => ZiTeng-5700-1--10.2.25.2--vrpcfg.zip
-    newname = nameprefix + 'vrpcfg.zip'
+    # Rename zip like this: vrpcfg.zip => ZiTeng-5700-1--10.2.25.2.zip
+    newname = nameprefix + '.zip'
     newfp = os.path.join(p, newname)
     logging.debug('%s rename %s/{vrpcfg.zip => %s}' %
                   (device.name, p, newname))
@@ -110,11 +110,11 @@ def post_proc_huawei(device):
     if len(zf.namelist()) == 1 and zf.namelist()[0] in possible_name:
         txtconfname = zf.namelist()[0]
     else:
-        logging.error('%s ERROR: unknown files in zip, processing aborted')
+        logging.error('%s ERROR: unknown file in zip, post-process aborted')
         return False
-    # Rename cfg like this: {_vrpcfgtmp.cfg, vrpcfg.cfg} =>
-    # ZiTeng-5700-1--10.2.25.2--vrpcfg.cfg
-    newname = nameprefix + txtconfname
+    # Rename like this: {_vrpcfgtmp.cfg, vrpcfg.cfg} =>
+    # ZiTeng-5700-1--10.2.25.2.cfg
+    newname = nameprefix + '.cfg'
     fp = os.path.join(p, txtconfname)
     newfp = os.path.join(p, newname)
     logging.debug('%s rename %s/{%s => %s}' %
