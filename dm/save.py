@@ -89,31 +89,42 @@ def post_proc_huawei(device):
     file in zip archive. Extract it so I can add it into git repository.
     """
     import zipfile
-    nameprefix = device.name_en + '--' + device.ip + '--vrpcfg.'
-    # unzip
+    p = device.upload_path
     uf = device.upload_abs_path
+    nameprefix = device.name_en + '--' + device.ip + '--'
+    # unzip
     if not os.path.isfile(uf):
         logging.error('%s upload failed, skip unzip' % device.name)
         return False
     zf = zipfile.ZipFile(uf, mode='r')
     logging.debug('%s unzip uploaded file: %s' % (device.name, uf))
-    zf.extractall(path=device.upload_path)
+    zf.extractall(path=p)
     # Rename zip like this: vrpcfg.zip => ZiTeng-5700-1--10.2.25.2--vrpcfg.zip
-    newname = nameprefix + 'zip'
-    newfp = os.path.join(device.upload_path, newname)
-    logging.debug('%s rename %s to %s' % (device.name, uf, newfp))
+    newname = nameprefix + 'vrpcfg.zip'
+    newfp = os.path.join(p, newname)
+    logging.debug('%s rename %s/{vrpcfg.zip => %s}' %
+                  (device.name, p, newname))
     os.rename(uf, newfp)
-    # Rename cfg like this: vrpcfg.cfg => ZiTeng-5700-1--10.2.25.2--vrpcfg.cfg
-    fp = os.path.join(device.upload_path, 'vrpcfg.cfg')
-    newname = nameprefix + 'cfg'
-    newfp = os.path.join(device.upload_path, newname)
-    logging.debug('%s rename %s to %s' % (device.name, fp, newfp))
+    # Determine filename in zip
+    possible_name = ['_vrpcfgtmp.cfg', 'vrpcfg.cfg']
+    if len(zf.namelist()) == 1 and zf.namelist()[0] in possible_name:
+        txtconfname = zf.namelist()[0]
+    else:
+        logging.error('%s ERROR: unknown files in zip, processing aborted')
+        return False
+    # Rename cfg like this: {_vrpcfgtmp.cfg, vrpcfg.cfg} =>
+    # ZiTeng-5700-1--10.2.25.2--vrpcfg.cfg
+    newname = nameprefix + txtconfname
+    fp = os.path.join(p, txtconfname)
+    newfp = os.path.join(p, newname)
+    logging.debug('%s rename %s/{%s => %s}' %
+                  (device.name, p, txtconfname, newname))
     os.rename(fp, newfp)
 
     fix_perm(newfp)
     # Update attribute with new name
-    logging.debug('%s update device.upload_abs_path = %s' % (device.name,
-                                                             newfp))
+    logging.debug('%s update device.upload_abs_path = %s' %
+                  (device.name, newfp))
     device.upload_abs_path = newfp
 
 
