@@ -53,8 +53,8 @@ show_config_next_page = ' '
 # upload config file related things
 upload_config_need_escalating = 1
 upload_filename_on_dev = 'startup.cfg'
-upload_filename = 'RC_NAME_RC--RC_IP_RC--startup.cfg'
-upload_config_command = 'put startup.cfg RC_NAME_RC--RC_IP_RC--startup.cfg'
+upload_filename = 'RC_NAME_RC--RC_IP_RC.cfg'
+upload_config_command = 'put startup.cfg RC_NAME_RC--RC_IP_RC.cfg'
 """
 upload_config_command = '''ftp
 open RC_FTP_SERVER_ADDR_RC
