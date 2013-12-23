@@ -81,45 +81,21 @@ def post_proc(device):
         logging.error('%s upload failed, file frag removed' % device.name)
         return False
     from dm import git
-    git.git_commit(device.upload_abs_path)
+    git.commit(device.upload_abs_path)
 
 
 def post_proc_huawei(device):
     """Post-processes on huawei switch's config, it's clear text config
     file in zip archive. Extract it so I can add it into git repository.
     """
-    import zipfile
     p = device.upload_path
     uf = device.upload_abs_path
-    nameprefix = device.name_en + '--' + device.ip
-    # unzip
-    if not os.path.isfile(uf):
-        logging.error('%s upload failed, skip unzip' % device.name)
-        return False
-    zf = zipfile.ZipFile(uf, mode='r')
-    logging.debug('%s unzip uploaded file: %s' % (device.name, uf))
-    zf.extractall(path=p)
     # Rename zip like this: vrpcfg.zip => ZiTeng-5700-1--10.2.25.2.zip
-    newname = nameprefix + '.zip'
+    newname = device.name_en + '--' + device.ip + '.zip'
     newfp = os.path.join(p, newname)
     logging.debug('%s rename %s/{vrpcfg.zip => %s}' %
                   (device.name, p, newname))
     os.rename(uf, newfp)
-    # Determine filename in zip
-    possible_name = ['_vrpcfgtmp.cfg', 'vrpcfg.cfg']
-    if len(zf.namelist()) == 1 and zf.namelist()[0] in possible_name:
-        txtconfname = zf.namelist()[0]
-    else:
-        logging.error('%s ERROR: unknown file in zip, post-process aborted')
-        return False
-    # Rename like this: {_vrpcfgtmp.cfg, vrpcfg.cfg} =>
-    # ZiTeng-5700-1--10.2.25.2.cfg
-    newname = nameprefix + '.cfg'
-    fp = os.path.join(p, txtconfname)
-    newfp = os.path.join(p, newname)
-    logging.debug('%s rename %s/{%s => %s}' %
-                  (device.name, p, txtconfname, newname))
-    os.rename(fp, newfp)
 
     fix_perm(newfp)
     # Update attribute with new name
