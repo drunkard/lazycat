@@ -27,6 +27,9 @@ def backup_config():
         roll_on_vendor(vendor)
     # Stop FTP server
     # ftp_server.stop()
+    # Push all commits to remote server
+    from dm import git
+    git.push2server()
 
 
 def check_attr(device, attrlist):
