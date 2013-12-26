@@ -2,7 +2,6 @@
 	manages config policies to automatically retrieve config from network devices
 	save it locally
 	save config on remote device
-	git commit the different config into git repo, which could be shown on web, password safety
 
 	commands:
 	host vendor 'vendor' name 'name' ip 'ip'
@@ -12,6 +11,7 @@
 	check hostname all	# 检查设备命名是否规范
 	check hostname 'name'
 	check hostname vendor 'vendor'
+	check temperature 'name'
 	check config syslog
 	check config onu-bandwidth
 	commit-config running 'name'
@@ -30,6 +30,9 @@
 		Connect timeout(telnet)
 		Escalating conflicted
 		Unknown
+		Save running-config failed
+		Upload to ftp server failed
+		Commit failed
 	show history 'name' all
 	show history 'name'		# 默认显示5个
 	show history all
@@ -39,10 +42,18 @@
 	show stats by vendor
 		Vendor		Total		Alive		Dead
 		H3C		61		60		1
+	# 温度
+	temperature threshold high 35 default
+	temperature threshold high 35 vendor 'vendor'
+	temperature threshold high 35 name 'name'
+	temperature threshold low 10 name 'name'
+	show temperature [abnormal/low/high]
+	# job dispatcher
 	job commit daily 3:01
 	job commit weekly sunday 3:01
 	job commit monthly 1 3:01
 	job commit-once 2013-12-19 3:30
+	job temperature-monitor 3 min
 
 
 'ftp'	# FTP function management
@@ -89,8 +100,6 @@ A lot network device's config have same section on one function's config, like l
 	privilege config on devices
 
 Network trouble auto diag. Need to receive and parse logs from these devices. and then respond. Warn on administrator more precisely.
-
-Auto backup device config, add them into git repository, showing the difference via web/client.
 
 *nix server health check, do dns/squid first.
 
