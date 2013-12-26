@@ -51,9 +51,9 @@ show_config_next_page = ' '
 # upload config file related things
 upload_config_need_escalating = 0
 # Args: FTP_SERVER_ADDR, FTP_USER, FTP_PASSWORD, device.ip, device.name
-upload_filename = 'RC_NAME_RC--RC_IP_RC.cfg'
+upload_filename = 'RC_NAME_RC--RC_IP_RC.dat'
 upload_config_command = 'copy flash: //cfg/startrun.dat ftp: \
         //RC_FTP_SERVER_ADDR_RC/' + upload_filename + '@RC_FTP_USER_RC:RC_FTP_PASSWORD_RC'
-upload_config_command_wrong = 'Incomplete command'
+upload_config_command_wrong = r'(Incomplete command|553 Could not create)'
 upload_config_ok_hint = 'file copied successfully'
 upload_config_fail_hint = r'(Login incorrect|Transmission aborted)'
