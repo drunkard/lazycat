@@ -155,6 +155,15 @@ def fix_text(f):
     move(tmpf, f)
 
 
+def git_remote_exists(name):
+    if len(repo.remotes) == 0:
+        return False
+    for r in repo.remotes:
+        if r.name == name:
+            return True
+    return False
+
+
 def post_commit():
     """Post processes after commit"""
     pass
@@ -181,15 +190,17 @@ def pre_commit(f):
 
 def pre_push():
     """Enviroment prepares before doing git-push"""
-    # remotes already configed
-    if repo.remotes:
-        return True
-    # add remote from config, and set it as default
     from etc import lazycat_conf as conf
     if hasattr(conf, 'GIT_SERVER_NAME') and hasattr(conf, 'GIT_SERVER_URL'):
         name = conf.GIT_SERVER_NAME
         url = conf.GIT_SERVER_URL
-    repo.create_remote(name, url)
+    if git_remote_exists(name):
+        # remotes already configed
+        pass
+    else:
+        # add remote from config, and set it as default
+        repo.create_remote(name, url)
+    return True
 
 
 def push2server():
@@ -209,7 +220,11 @@ def push2server():
         return False
     pre_push()
     # TODO: implement using pygit2 while it's avaiable
-    system('git push %s master' % GIT_SERVER_NAME)
+    if system('cd %s && git push -f %s master &>/dev/null' %
+              (repopath, GIT_SERVER_NAME)) == 0:
+        logging.warn('git push succeeded')
+    else:
+        logging.error('git push failed')
     """This transport isn't implemented in pygit2 yet.
     # Push to every remote
     for r in repo.remotes:
