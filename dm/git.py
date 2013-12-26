@@ -82,6 +82,7 @@ def copy_to_repo(f):
     """Copy raw device config file to git working directory.
     Because those config files contains invalid characters to git.
     """
+    from os import remove
     from shutil import copyfile
     relpath = f.replace(datapath, '')
     newf = path.join(repopath, relpath)
@@ -89,6 +90,9 @@ def copy_to_repo(f):
     if not path.isdir(dir_in_repo):
         makedirs(dir_in_repo)
     logging.debug('copy file: %s -> %s' % (f, newf))
+    # Remove it before copy. If they are same, copyfile() would fail.
+    if path.isfile(newf):
+        remove(newf)
     copyfile(f, newf)
     return newf
 
