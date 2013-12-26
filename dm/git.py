@@ -10,7 +10,7 @@ repopath = path.abspath(repopath)
 repo = pygit2.Repository(path.join(repopath, '.git'))
 author = pygit2.Signature(conf.MYNAME, conf.EMAIL)
 commiter = author
-message = "backup system auto committed: "
+message = "backup system auto committed"
 
 
 def check_repo_status(repopath):
@@ -24,12 +24,15 @@ def check_repo_status(repopath):
 
 def commit_one_file(f):
     """Do real commit job"""
-    from re import sub
+    from os import path
     logging.debug('git commit: start on %s' % f)
+    # Determine message
+    vendor = path.basename(path.dirname(f))
+    host_name = path.basename(f).split('--')[0]
+    newmessage = ': '.join([message, vendor, host_name])
+    # Start commit
     f = pre_commit(f)
     relf = path.relpath(f, start=repopath)
-    host_name = sub('.*/', '', f)
-    host_name = sub('--.*', '', host_name)
     if relf not in repo.status().keys():
         logging.debug('git commit: nothing changed on %s' % f)
         return True
@@ -51,7 +54,7 @@ def commit_one_file(f):
         # 'refs/heads/master',
         'HEAD',
         author, commiter,
-        message + host_name,
+        newmessage,
         treeid,
         parents
     )
