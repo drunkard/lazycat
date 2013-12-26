@@ -17,6 +17,8 @@ def backup_config():
     ftp_server = ftp.server()
     if not ftp_server.start():
         return False
+    # Prepare git workdir
+    git_init_repo()
     # Give test_class higher priority, for testing
     if hasattr(dev, 'test_class') and dev.test_class != []:
         c = dev.test_class
@@ -109,6 +111,32 @@ def get_host(vendor, host_name):
     dict2dev = partial(type, 'dict2dev', ())
     dev = dict2dev(host_info)
     return dev
+
+
+def git_init_repo():
+    """Init git repo, this very early process, so can not be in
+    dm/__init__.py
+
+    Check, and if the path in setting doesn't exists, then init it.
+    """
+    # This is very early process, so grab all things myself
+    from pygit2 import init_repository
+    from os import makedirs, path
+    from etc import lazycat_conf as conf
+    repopath = path.join(conf.DEVCONF_BACKUP_PATH, '../git')
+    repopath = path.abspath(repopath)
+    if not path.isdir(repopath):
+        makedirs(repopath)
+    if path.isdir(path.join(repopath, '.git')):
+        logging.debug('git repository already initialized, return True')
+        return True
+    # Do init now
+    if init_repository(repopath):
+        logging.debug('init git repository ok')
+        return True
+    else:
+        logging.debug('init git repository failed')
+        return False
 
 
 def replace_var_in_cmd(device_dict, cmdname):

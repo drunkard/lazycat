@@ -73,8 +73,6 @@ def commit(f):
 
     if not path.isfile(f):
         return False
-    if not init_repo():
-        return False
     # Do commit now
     commit_one_file(f)
     check_repo_status(repopath)
@@ -155,22 +153,6 @@ def fix_text(f):
             newtext.write(line)
     newtext.close()
     move(tmpf, f)
-
-
-def init_repo():
-    """Check, and if the path in setting doesn't exists, then init it"""
-    if not path.isdir(repopath):
-        makedirs(repopath)
-    if path.isdir(path.join(repopath, '.git')):
-        logging.debug('git repository already initialized')
-        return True
-    # Do init now
-    if pygit2.init_repository(repopath):
-        logging.debug('init git repository ok')
-        return True
-    else:
-        logging.debug('init git repository failed')
-        return False
 
 
 def post_commit():
