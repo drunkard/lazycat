@@ -71,6 +71,8 @@ def pre_proc(device):
 
 def post_proc(device):
     """Post-processes after successfully uploaded config"""
+    # Force sync, or following reads may be wrong.
+    os.sync()
     # Vendor specific actions
     if device.vendor == 'huawei':
         post_proc_huawei(device)
