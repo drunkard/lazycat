@@ -1,5 +1,6 @@
 import logging
 import pygit2
+import os
 from os import makedirs, path
 from etc import lazycat_conf as conf
 
@@ -95,9 +96,9 @@ def copy_to_repo(f):
     # To avoid deadlock, copy 10 times at most.
     cnt = 0
     while True:
+        copyfile(f, newf)
         if path.getsize(newf) > 0 or cnt > 10:
             break
-        copyfile(f, newf)
         cnt += 1
     return newf
 
@@ -107,7 +108,6 @@ def fix_file_end(f):
         Truncate blank lines in end of file;
         Add \n if to end of file there's no one.
     """
-    import os
     oldfile = open(f, mode='r+')
     oldfile.seek(0, os.SEEK_END)
     pos = oldfile.tell()

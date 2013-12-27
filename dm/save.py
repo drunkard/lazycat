@@ -52,7 +52,6 @@ def fix_perm(f):
     uid = pwd.getpwnam(FTP_USER).pw_uid
     gid = pwd.getpwnam(FTP_USER).pw_gid
     if os.stat(f).st_uid == uid and os.stat(f).st_gid == gid:
-        logging.debug('chown already done: %s' % f)
         return True
     # Do it now
     if not os.chown(f, uid, gid):
