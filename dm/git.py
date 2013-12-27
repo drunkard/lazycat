@@ -108,6 +108,8 @@ def fix_file_end(f):
         Truncate blank lines in end of file;
         Add \n if to end of file there's no one.
     """
+    import string
+    valid_char = string.ascii_letters + string.punctuation
     oldfile = open(f, mode='r+')
     oldfile.seek(0, os.SEEK_END)
     pos = oldfile.tell()
@@ -118,7 +120,7 @@ def fix_file_end(f):
     while pos > 0:
         pos -= 1
         oldfile.seek(pos, os.SEEK_SET)
-        if oldfile.read(1) != '\n':
+        if oldfile.read(1) in valid_char:
             break
     new_pos = pos + 2
     # If there's nothing need to truncate, the last pos will be (size of f -
