@@ -109,7 +109,7 @@ def fix_file_end(f):
         Add \n if to end of file there's no one.
     """
     import string
-    valid_char = string.ascii_letters + string.punctuation
+    valid_char = string.printable.strip(string.whitespace)
     oldfile = open(f, mode='r+')
     oldfile.seek(0, os.SEEK_END)
     pos = oldfile.tell()
