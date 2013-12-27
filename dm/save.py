@@ -81,7 +81,12 @@ def post_proc(device):
         logging.error('%s upload failed, file frag removed' % device.name)
         return False
     from dm import git
-    git.commit(device.upload_abs_path)
+    if os.path.getsize(device.upload_abs_path) > 0:
+        git.commit(device.upload_abs_path)
+    else:
+        logging.fatal('%s empty file: %s' % (device.name,
+                                             device.upload_abs_path))
+        os.remove(device.upload_abs_path)
 
 
 def post_proc_huawei(device):
