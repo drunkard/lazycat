@@ -31,6 +31,7 @@ def backup_config():
     # ftp_server.stop()
     # Push all commits to remote server
     from dm import git
+    git.check_repo_status()
     git.push2server()
 
 

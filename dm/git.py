@@ -13,7 +13,7 @@ commiter = author
 message = "backup system auto committed"
 
 
-def check_repo_status(repopath):
+def check_repo_status():
     """Check git repository status, is there's any not commited files"""
     if repo.status() == {}:
         return True
@@ -78,7 +78,6 @@ def commit(f):
         return False
     # Do commit now
     commit_one_file(f)
-    check_repo_status(repopath)
 
 
 def copy_to_repo(f):
