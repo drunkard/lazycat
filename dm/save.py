@@ -80,11 +80,12 @@ def post_proc(device):
         logging.error('%s upload failed, file frag removed' % device.name)
         return False
     from dm import git
-    if os.path.getsize(device.upload_abs_path) > 0:
+    fsize = os.stat(device.upload_abs_path).st_size
+    if fsize > 0:
         git.commit(device.upload_abs_path)
     else:
-        logging.fatal('%s empty file: %s' % (device.name,
-                                             device.upload_abs_path))
+        logging.fatal('%s ERROR: got empty file: %s size: %s' %
+                      (device.name, device.upload_abs_path, fsize))
         os.remove(device.upload_abs_path)
 
 
