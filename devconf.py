@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 import logging
 import os
 import sys
@@ -17,7 +18,7 @@ if lazycat_conf.DEBUG_FG == 1:
 else:
     logging.basicConfig(format='%(asctime)s %(message)s',
                         level=lazycat_conf.DEBUG_LEVEL,
-                        filename=lazycat_conf.DEVCONF_LOG)
+                        filename=lazycat_conf.DEVCONF_LOG, encoding='utf-8')
 
 
 def devconf():
