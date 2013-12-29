@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """Methods used to save devices' config.
 """
 import logging
@@ -79,14 +81,14 @@ def post_proc(device):
     # Common actions
     if not os.path.isfile(device.upload_abs_path):
         # FTP server will delete upload failure files
-        logging.error('%s upload failed, file frag removed' % device.name)
+        logging.error(u'%s upload failed, file frag removed' % device.name)
         return False
     from dm import git
     fsize = os.stat(device.upload_abs_path).st_size
     if fsize > 0:
         git.commit(device.upload_abs_path)
     else:
-        logging.fatal('%s ERROR: got empty file: %s size: %s' %
+        logging.fatal(u'%s ERROR: got empty file: %s size: %s' %
                       (device.name, device.upload_abs_path, fsize))
         os.remove(device.upload_abs_path)
 
@@ -130,21 +132,21 @@ def save_without_confirm(device):
     """These devices don't need confirm while save running config."""
     s = device.session
     s.sendline(device.save_config_command)
-    logging.warn('%s exec command: %s' %
+    logging.warn(u'%s exec command: %s' %
                  (device.name, device.save_config_command))
     i = s.expect([device.save_config_ok_hint,
                   device.save_config_fail_hint, pexpect.TIMEOUT,
                   device.escalated_prompt])
     header = device.name + ' save running config to device'
     if i == 0:
-        logging.warn('%s ok' % header)
+        logging.warn(u'%s ok' % header)
         return True
     elif i == 1 or i == 2:
-        logging.error('%s failed' % header)
+        logging.error(u'%s failed' % header)
         return False
     elif i == 3:
         # If save state is unknown, assume it's OK
-        logging.error('%s finished with unknown state' % header)
+        logging.error(u'%s finished with unknown state' % header)
         return True
 
 
@@ -152,7 +154,7 @@ def save_with_confirm(device):
     """These devices need manual confirm while save running config."""
     s = device.session
     s.sendline(device.save_config_command)
-    logging.warn('%s exec command: %s' % (device.name,
+    logging.warn(u'%s exec command: %s' % (device.name,
                                           device.save_config_command))
     i = 0
     while i == 0 or i == 1:
@@ -164,11 +166,11 @@ def save_with_confirm(device):
         elif i == 1:
             s.sendline('\r')
         elif i == 2:
-            logging.warn('%s saved running config to device successfully' %
+            logging.warn(u'%s saved running config to device successfully' %
                          device.name)
             return True
         elif i == 3:
-            logging.error('%s save running config to device failed' %
+            logging.error(u'%s save running config to device failed' %
                           device.name)
             return False
 
@@ -179,7 +181,7 @@ def show_config(device):
     """
     # TODO: implement and test me
     device.session.sendline(device.show_config_command)
-    logging.info('%s exec show_config_command: %s' %
+    logging.info(u'%s exec show_config_command: %s' %
                  (device.name, device.show_config_command))
     # determine prompt
     if hasattr(device, 'show_config_need_escalating') and \
@@ -187,7 +189,7 @@ def show_config(device):
         prompt = device.escalated_prompt
     else:
         prompt = device.prompt
-    logging.info('%s start to roll config' % device.name)
+    logging.info(u'%s start to roll config' % device.name)
     i = 0
     while i == 0:
         i = device.session.expect([device.show_config_paging_prompt, prompt])
@@ -206,17 +208,17 @@ def upload_greenway_onu_profile(device):
     s = device.session
     cmd = device.upload_config_command2
     s.sendline(cmd)
-    logging.error('%s exec command: %s' % (device.name, cmd))
+    logging.error(u'%s exec command: %s' % (device.name, cmd))
     i = s.expect([device.upload_config_ok_hint, device.upload_config_fail_hint,
                   device.upload_config_command_wrong, pexpect.TIMEOUT])
     if i == 0:
-        logging.warn('%s ftp: upload onu-profile ok' % device.name)
+        logging.warn(u'%s ftp: upload onu-profile ok' % device.name)
     elif i == 1:
-        logging.error('%s ftp: upload onu-profile failed' % device.name)
+        logging.error(u'%s ftp: upload onu-profile failed' % device.name)
     elif i == 2:
-        logging.error('%s upload onu-profile command is wrong' % device.name)
+        logging.error(u'%s upload onu-profile command is wrong' % device.name)
     elif i == 3:
-        logging.error('%s ERROR: upload onu-profile timeout' % device.name)
+        logging.error(u'%s ERROR: upload onu-profile timeout' % device.name)
 
 
 def upload_h3c_config(device):

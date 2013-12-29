@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Device management
 """
@@ -44,7 +46,7 @@ def check_attr(device, attrlist):
     """
     for i in attrlist:
         if not hasattr(device, i):
-            logging.error('%s lacks setting: %s' % (device.name, i))
+            logging.error(u'%s lacks setting: %s' % (device.name, i))
             return False
     return True
 
@@ -70,7 +72,7 @@ def fix_commands(device_dict):
         if k not in device_dict.keys():
             continue
         device_dict[k] = replace_var_in_cmd(device_dict, k)
-        logging.debug('%s fix_commands %s="%s"' %
+        logging.debug(u'%s fix_commands %s="%s"' %
                       (device_dict['name'], k, device_dict[k]))
     return device_dict
 
@@ -89,20 +91,20 @@ def get_host(vendor, host_name):
     # Retrieve per host settings
     host_info = hosts.get(host_name)
     if host_info is None:
-        logging.error('%s no such host in hosts_%s' % (host_name, vendor))
+        logging.error(u'%s no such host in hosts_%s' % (host_name, vendor))
         return None
-    logging.debug("%s got per host setting" % (host_name))
+    logging.debug(u"%s got per host setting" % (host_name))
 
     # Add vendor key
     host_info = dict(host_info, **{'vendor': vendor})
 
     # Retrieve vendor defaults in etc.dev, then merge to host_info
-    logging.debug("%s applying defaults in etc.dev.%s" %
+    logging.debug(u"%s applying defaults in etc.dev.%s" %
                   (host_name, 'default_' + vendor))
     host_info = dict(defaults, **host_info)
 
     # Retrieve vendor defaults im dm.model, then merge to host_info
-    logging.debug("%s applying defaults in dm.model.%s" % (host_name, vendor))
+    logging.debug(u"%s applying defaults in dm.model.%s" % (host_name, vendor))
     host_info = dict(model.__dict__[vendor].__dict__, **host_info)
 
     # TODO: update device.admin with config in etc.admin
@@ -150,7 +152,6 @@ def replace_var_in_cmd(device_dict, cmdname):
     for var in should_be_replaced:
         v = device_dict[cmdname]
         vinc = 'RC_' + var + '_RC'
-        logging.debug('  replacing %s' % var)
         if var == 'NAME':
             # Rename filename to 'vendor' + filename, because chrooted ftp
             # disallows user to upload file to root of HOME, and the HOME must

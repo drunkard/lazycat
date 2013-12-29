@@ -10,6 +10,10 @@ try:
 except ImportError as e:
     sys.exit(e)
 
+# Set LANG in shell
+os.environ['LANG'] = 'en_US.utf8'
+
+# logging config
 if not os.path.isdir(lazycat_conf.LOG_PATH):
     os.makedirs(lazycat_conf.LOG_PATH)
 if lazycat_conf.DEBUG_FG == 1:

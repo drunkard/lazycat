@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 import logging
 import pygit2
 import os
@@ -155,9 +157,9 @@ def fix_text(f):
         0: '\n',    # Ctrl-@ => \n
     }
     tmpf = '/dev/shm/devconf-tmp-file'
-    newtext = open(tmpf, mode='w')
+    newtext = open(tmpf, mode='w', encoding='utf-8')
     re_compiled = re.compile(' +$')
-    with open(f, mode='r') as text:
+    with open(f, mode='r', encoding='utf-8') as text:
         for line in text:
             line = line.translate(table)
             line = re_compiled.sub('', line)
