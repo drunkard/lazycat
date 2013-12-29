@@ -6,7 +6,7 @@ import sys
 # import psycopg2
 try:
     from dm import backup_config
-    from etc import lazycat_conf
+    from etc import lazycat_conf as conf
 except ImportError as e:
     sys.exit(e)
 
@@ -14,15 +14,18 @@ except ImportError as e:
 os.environ['LANG'] = 'en_US.utf8'
 
 # logging config
-if not os.path.isdir(lazycat_conf.LOG_PATH):
-    os.makedirs(lazycat_conf.LOG_PATH)
-if lazycat_conf.DEBUG_FG == 1:
+if not os.path.isdir(conf.LOG_PATH):
+    os.makedirs(conf.LOG_PATH)
+if conf.DEBUG_FG == 1:
     logging.basicConfig(format='%(asctime)s %(message)s',
-                        level=lazycat_conf.DEBUG_LEVEL)
+                        level=conf.DEBUG_LEVEL)
 else:
-    logging.basicConfig(format='%(asctime)s %(message)s',
-                        level=lazycat_conf.DEBUG_LEVEL,
-                        filename=lazycat_conf.DEVCONF_LOG, encoding='utf-8')
+    handler = logging.FileHandler(conf.DEVCONF_LOG, 'a', encoding='UTF-8')
+    formatter = logging.Formatter("%(asctime)s %(message)s")
+    handler.setFormatter(formatter)
+    root_logger = logging.getLogger()
+    root_logger.addHandler(handler)
+    root_logger.setLevel(conf.DEBUG_LEVEL)
 
 
 def devconf():
