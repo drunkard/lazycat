@@ -19,6 +19,8 @@ def archive_old_files(vendor):
     # Move it
     allfile = glob(p + '/*')
     for f in allfile:
+        if os.path.isdir(f):
+            continue
         fname = os.path.basename(f)
         newf = os.path.join(ar_dir, fname)
         os.renames(f, newf)
