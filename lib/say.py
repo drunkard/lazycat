@@ -21,6 +21,11 @@ def available_cmds(cmdlist, msg=""):
             print("  " + str(c))
 
 
+def nocmd(cmdname):
+    print("System command %s%s%s is not usable, please notify developer." %
+          (color.RED_BLINK, cmdname, color.OFF))
+
+
 def nofile(f, prefix=""):
     """Say standard words: No such file or directory"""
     if prefix:

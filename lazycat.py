@@ -115,13 +115,20 @@ l1_map = [
     ('password', 'passwd', 'Change password'),
     ('time', 'cal -3; date', 'Show local date and time'),
     # hping need root privilege
-    # ('tcp-ping', 'hping -p 80 --syn ', 'Ping using TCP protocol, default 80 port'),
-    # ('udp-ping', 'hping --udp -p 53 ', 'Ping using UDP protocol, default 53 port')
-    ('tcp-ping', 'nping --tcp-connect -p 80 ', 'Ping using TCP protocol, using port 80'),
-    ('udp-ping', 'nping --udp -p 53 ', 'Ping using UDP protocol, using port 53'),
-    ('tcp-traceroute', 'tcptraceroute ', 'traceroute using TCP protocol, using port 80'),
-    # ('tcp-traceroute', 'traceroute -M tcp -p 80 ', 'traceroute using TCP protocol, using port 80'),
-    ('udp-traceroute', 'traceroute -U -p 53 ', 'traceroute using UDP protocol, using port 53')]
+    # ('tcp-ping', 'hping -p 80 --syn ',
+    #  'Ping using TCP protocol, default 80 port'),
+    # ('udp-ping', 'hping --udp -p 53 ',
+    #  'Ping using UDP protocol, default 53 port')
+    ('tcp-ping', 'nping --tcp-connect -p 80 ',
+     'Ping using TCP protocol, using port 80'),
+    ('udp-ping', 'nping --udp -p 53 ',
+     'Ping using UDP protocol, using port 53'),
+    ('tcp-traceroute', 'tcptraceroute ',
+     'traceroute using TCP protocol, using port 80'),
+    # ('tcp-traceroute', 'traceroute -M tcp -p 80 ',
+    #  'traceroute using TCP protocol, using port 80'),
+    ('udp-traceroute', 'traceroute -U -p 53 ',
+     'traceroute using UDP protocol, using port 53')]
 
 flush_interval = 10
 title = os.getlogin() + "@" + gethostname()
@@ -166,7 +173,6 @@ class MLCompleter(object):  # Custom completer
 
 class bgrun(threading.Thread):
     """Run something in background"""
-
     def __init__(self, flushlog):
         threading.Thread.__init__(self)
         self.runnable = flushlog
@@ -178,9 +184,10 @@ class bgrun(threading.Thread):
 
 def flushlog():
     while True:
+        ts = '\n### %4d-%02d-%02dT%02d:%02d:%02d ' % time.localtime()[:-3]
         try:
             # Add timestamp
-            fout.write('\n### %4d-%02d-%02dT%02d:%02d:%02d ' % time.localtime()[:-3] + title + "\n")
+            fout.write(ts + title + "\n")
             fout.flush()  # flush back to file
             time.sleep(flush_interval)
         except ValueError:
@@ -210,8 +217,8 @@ def run_with_log(command):
         if cmd_exists(command.split()[0]):
             pass
         else:
-            print("System command %s%s%s is not usable, please notify administrator." % (color.RED_BLINK, command.split()[0], color.OFF))
-            return 1
+            say.nocmd(command.split()[0])
+            return False
 
         thissession = pexpect.spawn('bash', ['-c', command])
     except pexpect.ExceptionPexpect, e:
@@ -220,7 +227,7 @@ def run_with_log(command):
     except SystemExit, e:
         print(str(e))
         return 1
-    except (KeyboardInterrupt, EOF, TIMEOUT):
+    except (KeyboardInterrupt, pexpect.EOF, pexpect.TIMEOUT):
     # except (BaseException, KeyboardInterrupt, EOFError, SystemExit):
         # thissession.sendcontrol('c')
         return 1
@@ -282,7 +289,8 @@ def run_without_log(command):
     elif FOUND_IN_MAP is True:
         pass
     else:
-        print("This function is not usable, please check it in PATH or l1_map: %s" % command)
+        print("This function is not usable, please recheck PATH or l1_map: %s"
+              % command)
         return 1
 
     # Run the command, this should be OK
@@ -299,7 +307,7 @@ def do_clear():
     os.system("clear")
 
 
-def do_log():
+def do_log(command):
     from cli import oplog
     sub = command.split()
     sub.reverse()
@@ -369,7 +377,7 @@ def do_shell():
     return True
 
 
-def do_show():
+def do_show(command):
     sub = command.split()
     sub.reverse()
     # If no sub-command, print usable sub-command and return
@@ -471,11 +479,11 @@ def ttywrapper():
             elif l1cmd in help_comp:
                 do_help()
             elif l1cmd in log_comp:
-                do_log()
+                do_log(command)
             elif l1cmd in quit_comp:
                 do_quit()
             elif l1cmd in show_comp:
-                do_show()
+                do_show(command)
             elif len(command.split()) >= 1 and l1cmd in log_cmd:
                 if len(command.split()) == 1:
                     os.system(command + ' -h')
