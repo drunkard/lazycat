@@ -1,3 +1,13 @@
+'config'	config lazycat self
+
+	user
+	user add
+	user del
+	password
+	permission
+	tui
+
+
 'device-management' - network device config management. sub enviroment, does these things:
 	manages config policies to automatically retrieve config from network devices
 	save it locally
@@ -64,10 +74,13 @@
 	show server information
 
 
-BUG:
-'log view'
+'log'
 	does not have a good pager
 	control code (from ssh, htop/atop) is kind hard to strip for me, by now.
+
+	view
+	search by date/time
+	search by device ip/name
 
 
 'dns'	DNS problem diag, at least include these commands:
@@ -126,3 +139,8 @@ session>
 	exit
 
 Anyway, it faces to general network administrator, and gonna be simplify their work a lot. At least I hope so ;)
+
+
+'show'	Show misc information
+
+	my-permission
