@@ -24,7 +24,7 @@ try:
     import pexpect
     # import rlcompleter2
     # import IPython.core.completer as completer
-    from lib import color
+    from lib import cmd_exists, color
 except ImportError, e:
     raise ImportError(str(e) + """\033[05;37;41m
 
@@ -37,7 +37,6 @@ __version__ = "0.1"
 __productname__ = "lazycat"
 __description__ = "A pseudo shell with restricted capability for AAA purpose."
 
-PATH = '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
 historyLength = 1000
 historyPath = os.path.expanduser('~/.' + __productname__ + '_history')
 PROMPT = color.GREEN_BOLD + "jumper" + color.OFF + "> "
@@ -145,7 +144,6 @@ dns_srcip_map = [
     ('1.1.1.1', '42.196.0.0/16, 49.221.128.0/17, 101.244.0.0/15, 118.205.1.0/17'),
     ('default', 'default')]
 
-os.putenv('PATH', PATH)
 global path
 path = os.environ.get('HOME') + '/%4d%02d%02d' % time.localtime()[:-6]
 if not os.path.isdir(path):
@@ -258,14 +256,6 @@ def str_to_class(s):
     return None
 
 
-def which(command):
-    from distutils.spawn import find_executable
-    if find_executable(command, path=PATH) is None:
-        return False
-    else:
-        return True
-
-
 def run_with_log():
     global fout
     log_filename = path + '/%4d%02d%02d-%02d%02d%02d-' % \
@@ -278,7 +268,7 @@ def run_with_log():
     bgrun(flushlog).start()
 
     try:
-        if which(command.split()[0]):
+        if cmd_exists(command.split()[0]):
             pass
         else:
             print("System command %s%s%s is not usable, please notify administrator." % (color.RED_BLINK, command.split()[0], color.OFF))
@@ -348,7 +338,7 @@ def run_without_log(command):
             continue
 
     # Second, test if it's in PATH, return if not
-    if which(command_name):
+    if cmd_exists(command_name):
         pass    # goto try: part
     elif FOUND_IN_MAP is True:
         pass

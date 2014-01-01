@@ -3,6 +3,19 @@ Both my own or borrowed from internet.
 """
 
 
+def cmd_exists(command, PATH=""):
+    """Check if given command exists.
+    PATH is optional.
+    """
+    from distutils.spawn import find_executable
+    if PATH == "":
+        PATH = "/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/sbin:/usr/local/bin"
+    if find_executable(command, path=PATH) is None:
+        return False
+    else:
+        return True
+
+
 def hanzi2pinyin(hanzi):
     """Convert HanZi to PinYin using lib xpinyin from github"""
     import string
