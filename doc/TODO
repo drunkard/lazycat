@@ -69,13 +69,17 @@ BUG:
 	does not have a good pager
 	control code (from ssh, htop/atop) is kind hard to strip for me, by now.
 
-Features to impletion:
-DNS problem diag, at least include these commands:
-dns list		List our DNS, name and IP
+
+'dns'	DNS problem diag, at least include these commands:
+
+	list		List our DNS, name and IP
   	list-views	List views on our DNS, and query-source used to test for each view
   	resolve		Resolve the gave name from our DNS
+	resolve from 'view-name' xx.com
 	public-resolve	Resolve the gave name from famous public DNS
 	reverse-resolve	Resolve IP address to domain name, so called ARPA
+	trace		Manually trace resolve progress step by step
+
 
 Multi-level or tree struct privilege control, which limits user capibility.
 

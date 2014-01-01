@@ -46,7 +46,6 @@ nolog_cmd = [
     # Single module functions
     'clear',
     'config',
-    'dns',
     'help',
     'log',
     'password',
@@ -73,10 +72,6 @@ config_l2 = [
     'password',
     'permission',
     'tui']
-dns_l2 = [
-    'arpa',
-    'resolve',
-    'trace']
 log_l2 = [
     'list',
     'search',
@@ -102,7 +97,6 @@ OMIT_OUTPUT = ['atop', 'htop', 'iotop', 'iftop', 'dnstop']
 
 # Partial command definations
 clear_comp = ['cl', 'cle', 'clear']
-dns_comp = ['d', 'dn', 'dns']
 help_comp = ['he', 'hel', 'help']
 log_comp = ['l', 'lo', 'log']
 log_del_comp = ['d', 'de', 'del']
@@ -129,9 +123,6 @@ l1_map = [
     ('tcp-traceroute', 'tcptraceroute ', 'traceroute using TCP protocol, using port 80'),
     # ('tcp-traceroute', 'traceroute -M tcp -p 80 ', 'traceroute using TCP protocol, using port 80'),
     ('udp-traceroute', 'traceroute -U -p 53 ', 'traceroute using UDP protocol, using port 53')]
-dns_srcip_map = [
-    ('1.1.1.1', '42.196.0.0/16, 49.221.128.0/17, 101.244.0.0/15, 118.205.1.0/17'),
-    ('default', 'default')]
 
 flush_interval = 10
 title = os.getlogin() + "@" + gethostname()
@@ -317,20 +308,6 @@ def run_without_log(command):
 
 def do_clear():
     os.system("clear")
-
-
-def do_dns():
-    print("Not implemented yet")
-    return True
-    sub = command.split()
-    sub.reverse()
-    # If no sub-command, print usable sub-command and return
-    if len(sub) == 1:
-        say.available_cmds(dns_l2)
-        return 1
-    else:
-        l2cmd = sub.pop()   # pop out 'show'
-    l2cmd = sub.pop()
 
 
 def do_log():
