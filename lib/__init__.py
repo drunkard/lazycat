@@ -30,6 +30,18 @@ def hanzi2pinyin(hanzi):
     return pinyin
 
 
+def human_readable_size(nbytes):
+    import math
+    suffixes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
+    if nbytes == 0:
+        return '0 B'
+    rank = int((math.log10(nbytes)) / 3)
+    rank = min(rank, len(suffixes) - 1)
+    human = nbytes / (1024.0 ** rank)
+    f = ('%.1f' % human).rstrip('0').rstrip('.')
+    return '%s %s' % (f, suffixes[rank])
+
+
 def random_char(y):
     import string
     from random import choice

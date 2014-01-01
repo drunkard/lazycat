@@ -19,3 +19,11 @@ def available_cmds(cmdlist, msg=""):
     if len(cmdlist) > 0:
         for c in sorted(cmdlist):
             print("  " + str(c))
+
+
+def nofile(f, prefix=""):
+    """Say standard words: No such file or directory"""
+    if prefix:
+        print("%s: %s: No such file or directory" % (str(prefix), f))
+    else:
+        print("%s: No such file or directory" % f)

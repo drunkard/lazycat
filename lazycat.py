@@ -4,8 +4,6 @@
 The entire ssh/telnet session is logged to a file, others won't be logged.
 """
 
-import glob
-import math
 import os
 import readline
 import string
@@ -135,10 +133,6 @@ dns_srcip_map = [
     ('1.1.1.1', '42.196.0.0/16, 49.221.128.0/17, 101.244.0.0/15, 118.205.1.0/17'),
     ('default', 'default')]
 
-global path
-path = os.environ.get('HOME') + '/%4d%02d%02d' % time.localtime()[:-6]
-if not os.path.isdir(path):
-    os.makedirs(path)
 flush_interval = 10
 title = os.getlogin() + "@" + gethostname()
 del gethostname
@@ -207,17 +201,6 @@ def flushlog():
             return 127
 
 
-def human_readable_size(nbytes):
-    suffixes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
-    if nbytes == 0:
-        return '0 B'
-    rank = int((math.log10(nbytes)) / 3)
-    rank = min(rank, len(suffixes) - 1)
-    human = nbytes / (1024.0 ** rank)
-    f = ('%.1f' % human).rstrip('0').rstrip('.')
-    return '%s %s' % (f, suffixes[rank])
-
-
 def save_history(historyPath=historyPath):
     f = open(historyPath, 'w')
     try:
@@ -235,17 +218,14 @@ def str_to_class(s):
     return None
 
 
-def run_with_log():
-    global fout
-    log_filename = path + '/%4d%02d%02d-%02d%02d%02d-' % \
-            time.localtime()[:-3] + os.getlogin() + '-' + \
-            command.strip().replace(' ', '-')
-    fout = file(log_filename, "ab")
-
+def run_with_log(command):
     # Begin log with timestamp
-    # fout.write ('%4d-%02d-%02dT%02d:%02d:%02d ' % time.localtime()[:-3] + title + "\n")
+    from cli.oplog import get_log_file
+    global fout
+    log_filename = get_log_file(command.strip().replace(' ', '-'))
+    fout = file(log_filename, "ab")
     bgrun(flushlog).start()
-
+    # Start pexpect session
     try:
         if cmd_exists(command.split()[0]):
             pass
@@ -354,6 +334,7 @@ def do_dns():
 
 
 def do_log():
+    from cli import oplog
     sub = command.split()
     sub.reverse()
     # If no sub-command, print usable sub-command and return
@@ -369,49 +350,14 @@ def do_log():
         """
         print ('Permission denied')
     elif l2cmd in log_list_comp:
-        """eg: log list
-        """
-
-        try:
-            files = sorted(glob.glob(path + "/*"))
-        except Exception, e:
-            print str(e)
-            print("Error getting file list !!!")
-            return 1
-
-        if len(files) == 0:
-            print("You don't have any log file.")
-        else:
-            print("Log files in %s:" % str(path))
-            print("%s Size  -  Date  - Time - User - CMD - Host%s" %
-                  (color.WHITE, color.OFF))
-            for f in files:
-                try:
-                    print("%s\t%s" % (human_readable_size(os.path.getsize(f)),
-                                      str(os.path.basename(f))))
-                except Exception, e:
-                    print(str(e))
-
+        oplog.do_list()
     elif l2cmd in log_view_comp:
-        """eg: log view 20130705-110150-mj-telnet-10.0.0.1
-        """
         try:
             f = sub.pop()
         except Exception:
             print("Need file name listed by \"log list\".")
-            return 1
-
-        f = path + '/' + f
-        if os.path.isfile(f):
-            os.system("less -r %s" % f)  # buggy
-            return True
-            # TODO: need rewrite
-            with open(f) as fc:
-                for line in fc:
-                    print ("%s" % str(line)),
-        else:
-            print("log view %s: No such file or directory" % str(f))
-            return 1
+            return False
+        oplog.do_view(f)
     else:
         say.available_cmds(log_l2)
 
@@ -568,7 +514,7 @@ def ttywrapper():
                 if len(command.split()) == 1:
                     os.system(command + ' -h')
                     continue
-                run_with_log()
+                run_with_log(command)
             elif len(command.split()) >= 1 and l1cmd in nolog_cmd:
                 try:
                     run_without_log(command)
