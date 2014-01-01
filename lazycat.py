@@ -22,6 +22,7 @@ try:
     import pexpect
     # import rlcompleter2
     # import IPython.core.completer as completer
+    from cli import history
     from lib import cmd_exists, color, say
 except ImportError, e:
     raise ImportError(str(e) + """\033[05;37;41m
@@ -35,8 +36,6 @@ __version__ = "0.1"
 __productname__ = "lazycat"
 __description__ = "A pseudo shell with restricted capability for AAA purpose."
 
-historyLength = 1000
-historyPath = os.path.expanduser('~/.' + __productname__ + '_history')
 PROMPT = color.GREEN_BOLD + "jumper" + color.OFF + "> "
 SHOW_WARN = 0
 
@@ -190,16 +189,6 @@ def flushlog():
             print("flushlog(): I/O operation failed, maybe lost some log")
             time.sleep(10)  # To avoid dead lock
             return 127
-
-
-def save_history(historyPath=historyPath):
-    f = open(historyPath, 'w')
-    try:
-        readline.set_history_length(1000)
-        readline.write_history_file(historyPath)
-    except Exception, e:
-        print(str(e))
-    f.close()
 
 
 def str_to_class(s):
@@ -509,20 +498,9 @@ def ttywrapper():
             continue
 
 
-# History, automatically load on login, and save on exit.
-try:
-    readline.read_history_file(historyPath)
-except IOError:
-    pass
-
-try:
-    import atexit
-    readline.set_history_length(historyLength)
-    atexit.register(readline.write_history_file, historyPath)
-except Exception:
-    print("Error on register history file, won't save command history.")
-
 if __name__ == "__main__":
+    history.load()
+    history.save()
     try:
         ttywrapper()
     except (Exception, SystemExit):
