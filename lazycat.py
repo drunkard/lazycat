@@ -24,7 +24,7 @@ try:
     import pexpect
     # import rlcompleter2
     # import IPython.core.completer as completer
-    from lib import cmd_exists, color
+    from lib import cmd_exists, color, say
 except ImportError, e:
     raise ImportError(str(e) + """\033[05;37;41m
 
@@ -46,7 +46,6 @@ SHOW_WARN = 0
 nolog_cmd = [
     # {'KEY': ('showed cmd', 'real cmd, maybe system cmd', 'Description')},
     # Single module functions
-    'auto',
     'clear',
     'config',
     'dns',
@@ -71,13 +70,6 @@ log_cmd = [
 all_cmd = log_cmd + nolog_cmd
 
 # Level 2 commands definations
-auto_l2 = [
-    'list',
-    'add',
-    'del',
-    'config',
-    'enable-password',
-    'password']
 config_l2 = [
     'user',
     'password',
@@ -111,7 +103,6 @@ log_search_l3 = [
 OMIT_OUTPUT = ['atop', 'htop', 'iotop', 'iftop', 'dnstop']
 
 # Partial command definations
-auto_comp = ['auto']
 clear_comp = ['cl', 'cle', 'clear']
 dns_comp = ['d', 'dn', 'dns']
 help_comp = ['he', 'hel', 'help']
@@ -225,18 +216,6 @@ def human_readable_size(nbytes):
     human = nbytes / (1024.0 ** rank)
     f = ('%.1f' % human).rstrip('0').rstrip('.')
     return '%s %s' % (f, suffixes[rank])
-
-
-def say_cmd(cmdlist, msg="All available commands:"):
-        print (msg)
-        if len(cmdlist) > 0:
-            for c in sorted(cmdlist):
-                print ("  " + str(c))
-
-
-def say_not_implemented():
-    print("%sThis is planned, but not implemented yet.%s\n" %
-          (color.CYAN_BOLD, color.OFF))
 
 
 def save_history(historyPath=historyPath):
@@ -356,14 +335,6 @@ def run_without_log(command):
         return 0
 
 
-def do_auto():
-    say_not_implemented()
-    print("""This function is intended to automatically config device with
-          predefined template, such as logging, password, etc.
-""")
-    return True
-
-
 def do_clear():
     os.system("clear")
 
@@ -375,7 +346,7 @@ def do_dns():
     sub.reverse()
     # If no sub-command, print usable sub-command and return
     if len(sub) == 1:
-        say_cmd(dns_l2, msg="All available sub-commands:")
+        say.available_cmds(dns_l2)
         return 1
     else:
         l2cmd = sub.pop()   # pop out 'show'
@@ -387,7 +358,7 @@ def do_log():
     sub.reverse()
     # If no sub-command, print usable sub-command and return
     if len(sub) == 1:
-        say_cmd(log_l2, msg="All available sub-commands:")
+        say.available_cmds(log_l2)
         return 1
     else:
         l2cmd = sub.pop()   # pop out 'show'
@@ -442,7 +413,7 @@ def do_log():
             print("log view %s: No such file or directory" % str(f))
             return 1
     else:
-        say_cmd(log_l2, msg="All available sub-commands:")
+        say.available_cmds(log_l2)
 
 
 def do_help():
@@ -491,7 +462,7 @@ def do_show():
     sub.reverse()
     # If no sub-command, print usable sub-command and return
     if len(sub) == 1:
-        say_cmd(show_l2, msg="All available sub-commands:")
+        say.available_cmds(show_l2)
         return 1
     else:
         l2cmd = sub.pop()   # pop out 'show'
@@ -510,7 +481,7 @@ def do_show():
     elif l2cmd in show_my_permission_comp:
         """show my-permission
         """
-        say_not_implemented()
+        say.not_implemented()
     elif l2cmd in show_user_comp:
         """show user
         """
@@ -528,9 +499,9 @@ def do_show():
         """
         os.system('cal -3; echo; date')
     elif l2cmd is None:
-        say_cmd(show_l2, msg="All available sub-commands:")
+        say.available_cmds(show_l2)
     else:
-        say_cmd(show_l2, msg="All available sub-commands:")
+        say.available_cmds(show_l2)
 
 
 def sigwinch_passthrough(sig, data):
@@ -583,9 +554,7 @@ def ttywrapper():
         command = command.strip()
         try:
             l1cmd = command.split()[0]
-            if l1cmd in auto_comp:
-                do_auto()
-            elif l1cmd in clear_comp:
+            if l1cmd in clear_comp:
                 do_clear()
             elif l1cmd in help_comp:
                 do_help()
@@ -607,11 +576,12 @@ def ttywrapper():
                     print(str(e))
             else:
                 if l1cmd in all_cmd:
-                    say_not_implemented()
+                    say.not_implemented()
 
                 print("%sBad command:%s %s\n" %
                       (color.RED_BG, color.OFF, command))
-                say_cmd(sorted(all_cmd))
+                say.available_cmds(sorted(all_cmd),
+                                   msg="All available commands:")
         except (KeyboardInterrupt, EOFError):
             continue
 
