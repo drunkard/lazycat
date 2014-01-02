@@ -58,11 +58,10 @@ log_l2 = [
     'list',
     'view']
 show_l2 = [
-    'all-jumper',
     'history',
-    'my-permission',
+    'ip',
+    'route',
     'user',
-    'this-server',
     'time']
 
 
@@ -74,8 +73,3 @@ log_list_comp = ['l', 'li', 'lis', 'list']
 log_view_comp = ['v', 'vi', 'vie', 'view']
 quit_comp = ['q', 'qu', 'qui', 'quit']
 show_comp = ['sh', 'sho', 'show']
-show_history_comp = ['h', 'history']
-show_my_permission_comp = ['m', 'my', 'my-' 'my-p', 'my-permission']
-show_user_comp = ['u', 'us', 'use', 'user']
-show_this_server_comp = ['th', 'this-server']
-show_time_comp = ['ti', 'tim', 'time']

@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """This program is a pseudo-shell and gives the user interactive control.
 The entire ssh/telnet session is logged to a file, others won't be logged.
@@ -6,7 +6,6 @@ The entire ssh/telnet session is logged to a file, others won't be logged.
 
 import os
 import readline
-import string
 import sys
 import threading
 import time
@@ -21,8 +20,8 @@ try:
     import cli
     from cli import history
     from lib import cmd_exists, color, say
-except ImportError, e:
-    raise ImportError(str(e) + """\033[05;37;41m
+except ImportError as e:
+    raise ImportError(e + """\033[05;37;41m
 
 A critical module was not found. Probably this operating system does not
 support it. Pexpect is intended for UNIX-like operating systems.\033[0m""")
@@ -48,7 +47,7 @@ class MLCompleter(object):  # Custom completer
     readline.set_completer(completer.complete)
     readline.parse_and_bind('tab: complete')
 
-    input = raw_input("Input: ")
+    input = input("Input: ")
     print "You entered", input
     """
     def __init__(self, options):
@@ -109,20 +108,20 @@ def run_with_log(command):
     from cli.oplog import get_log_file
     global fout
     log_filename = get_log_file(command.strip().replace(' ', '-'))
-    fout = file(log_filename, "ab")
+    fout = open(log_filename, "ab")
     bgrun(flushlog).start()
     # Start pexpect session
     try:
         thissession = pexpect.spawn('bash', ['-c', command])
-    except pexpect.ExceptionPexpect, e:
+    except pexpect.ExceptionPexpect as e:
         raise e
-    except SystemExit, e:
-        print(str(e))
+    except SystemExit as e:
+        print(e)
         return False
     except (KeyboardInterrupt, pexpect.EOF, pexpect.TIMEOUT):
         return False
-    except BaseException, e:
-        print(str(e))
+    except BaseException as e:
+        print(e)
         return False
 
     thissession.logfile = fout
@@ -131,15 +130,8 @@ def run_with_log(command):
     signal.signal(signal.SIGWINCH, sigwinch_passthrough)
 
     fout.write("### First command: %s\n" % command)
-    try:
-        # TODO: rewrite, control on every cmd
-        thissession.interact()
-    except OSError:
-        pass
-    except BaseException, e:
-        print("\r" + str(e))
-        return 1
-
+    # TODO: rewrite, control on every cmd
+    thissession.interact()
     fout.close()
     return True
 
@@ -170,8 +162,8 @@ def run_without_log(command):
     try:
         print("Raw command executed: %s" % command)
         os.system(command)
-    except BaseException, e:
-        print(str(e))
+    except BaseException as e:
+        print(e)
         print("\r")
         return 0
 
@@ -206,7 +198,7 @@ def do_log(command):
 
 
 def do_help():
-    """终端快捷键：
+    u"""终端快捷键：
     ?               显示可用命令
 
     Ctrl-A          光标移到行首
@@ -228,57 +220,16 @@ def do_help():
     Return          把命令发给终端
     """
     try:
-        print string.replace(do_help.__doc__, '\n    ', '\n')
-    except Exception, e:
-        print(str(e))
+        print(do_help.__doc__.replace('\n    ', '\n'))
+    except Exception as e:
+        print(e)
     return 0
 
 
 def do_quit():
     print ("%sSee you next time %s;)%s" %
            (color.CYAN_BOLD, color.BLINK, color.OFF))
-    os.exit()
-
-
-def do_show(command):
-    sub = command.split()
-    sub.reverse()
-    # If no sub-command, print usable sub-command and return
-    if len(sub) == 1:
-        say.available_cmds(cli.show_l2)
-        return 1
-    else:
-        l2cmd = sub.pop()   # pop out 'show'
-
-    l2cmd = sub.pop()
-    if l2cmd in cli.show_history_comp:
-        """show history
-        """
-        try:
-            cnt = 0
-            for h in range(readline.get_current_history_length()):
-                cnt += 1
-                print ("%s\t\b\b\b%s" % (cnt, readline.get_history_item(h)))
-        except Exception, e:
-            print(str(e))
-    elif l2cmd in cli.show_user_comp:
-        """show user
-        """
-        os.system('w -f')
-    elif l2cmd in cli.show_this_server_comp:
-        """show this-server
-        """
-        print("IP address configs on this host:")
-        os.system('ip addr')
-
-        print("\nRoutes on this host:")
-        os.system('ip route | grep -e default -e kernel ')
-    elif l2cmd in cli.show_time_comp:
-        """show time
-        """
-        os.system('cal -3; echo; date')
-    else:
-        say.available_cmds(cli.show_l2)
+    sys.exit()
 
 
 def sigwinch_passthrough(sig, data):
@@ -298,15 +249,15 @@ def ttywrapper():
     try:
         readline.parse_and_bind('tab: complete')
         readline.set_completer_delims(' ')
-    except Exception, e:
-        print(str(e))
+    except Exception as e:
+        print(e)
 
     while True:
         readline.set_completer(MLCompleter(cli.all_cmd).complete)
         global command
         # Get input, and deal with exceptions
         try:
-            command = raw_input(PROMPT)
+            command = input(PROMPT)
         except KeyboardInterrupt:
             """Ctrl-C"""
             print ("^C")
@@ -335,6 +286,7 @@ def ttywrapper():
             elif l1cmd in cli.quit_comp:
                 do_quit()
             elif l1cmd in cli.show_comp:
+                from cli.show import do_show
                 do_show(command)
             elif len(command.split()) >= 1 and l1cmd in cli.log_cmd:
                 if len(command.split()) == 1:
@@ -344,8 +296,8 @@ def ttywrapper():
             elif len(command.split()) >= 1 and l1cmd in cli.nolog_cmd:
                 try:
                     run_without_log(command)
-                except Exception, e:
-                    print(str(e))
+                except Exception as e:
+                    print(e)
             else:
                 if l1cmd in cli.all_cmd:
                     say.not_implemented()
@@ -363,6 +315,6 @@ if __name__ == "__main__":
     history.save()
     try:
         ttywrapper()
-    except (Exception, SystemExit):
+    except (Exception, SystemExit) as e:
         # After ttywrapper() exit, we get SystemExit exception here
-        sys.exit()
+        sys.exit(e)
