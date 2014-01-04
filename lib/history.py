@@ -16,6 +16,7 @@ def load():
 
 
 def save():
+    """Register a hook to save command history automatically at exit."""
     try:
         import atexit
         readline.set_history_length(HistoryLength)

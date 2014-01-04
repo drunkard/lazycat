@@ -7,9 +7,11 @@ def cmd_exists(command, PATH=""):
     """Check if given command exists.
     PATH is optional.
     """
+    import logging
     from distutils.spawn import find_executable
     if PATH == "":
         PATH = "/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/sbin:/usr/local/bin"
+    logging.debug('checking if command exists: ' + command)
     if find_executable(command, path=PATH) is None:
         return False
     else:
