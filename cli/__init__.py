@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 import os
+import readline
 import socket
 import sys
 import threading
@@ -93,7 +94,7 @@ show_l2 = {
 
 
 def bh():
-    logging.debug('%sbeen here%s' % (color.CYAN_BOLD, color.OFF))
+    print('%sbeen here%s' % (color.CYAN_BOLD, color.OFF))
 
 
 class bgrun(threading.Thread):
@@ -105,6 +106,82 @@ class bgrun(threading.Thread):
 
     def run(self):
         self.runnable()
+
+
+class MLCompleter(object):  # Custom completer
+    """Means Multi-Level Completer, used to complete multi level rawcmds
+    Usage:
+    completer = MLCompleter(["hello", "hi", "how are you", "goodbye", "great"])
+    readline.set_completer(completer.complete)
+    readline.parse_and_bind('tab: complete')
+
+    input = input("Input: ")
+    print "You entered", input
+    """
+    # TODO: finish multiple level complete
+    def __init__(self):
+        """This variable should not be initialized here, get it on demand and
+        in realtime.
+            origcmd = readline.get_line_buffer()
+        """
+
+    def complete(self, text, state):
+        options = sorted(self.possible_options())
+        if state == 0:  # on first trigger, build possible matches
+            if text:    # cache matches (entries that start with entered text)
+                self.matches = [s
+                                for s in options
+                                if s and s.startswith(text)]
+            else:  # no text entered, all matches possible
+                self.matches = options[:]
+        # return match indexed by state
+        try:
+            # return matched word, plus a space
+            return self.matches[state] + ' '
+        except IndexError:
+            return None
+
+    def possible_options(self):
+        """Parse user requested command, determine what next level command
+        dict.keys() is and return to completer.
+        """
+        origcmd = readline.get_line_buffer()
+        cmdlist = origcmd.split()
+        # Return possible command list from all_cmd by default, user didn't
+        # input anything yet.
+        if len(cmdlist) == 0:
+            return all_cmd.keys()
+        elif len(cmdlist) == 1 and not origcmd.endswith(' '):
+            return all_cmd.keys()
+        return self.level2_options()
+
+    def level2_options(self):
+        """Return next level list, user already input some command"""
+        origcmd = readline.get_line_buffer()
+        cmdlist = origcmd.split()
+        l1cmd = complete_cmd(cmdlist[0], all_cmd)
+        # Ends with space identifies user has confirmed previous command,
+        # do next level
+        if origcmd.endswith(' '):
+            nextlevel = len(cmdlist) + 1
+        else:
+            nextlevel = len(cmdlist)
+        nextlevel_dict_name = l1cmd + '_l' + str(nextlevel)
+        logging.debug('expect next level dict name: ' + nextlevel_dict_name)
+        try:
+            import cli
+            d = getattr(cli, nextlevel_dict_name)
+            return d.keys()
+        except AttributeError:
+            logging.debug('no next level command to complete for: ' + l1cmd)
+            # FIXME: rewrite this with general completer
+            # Special process on "log view ..."
+            if complete_cmd(cmdlist[1], log_l2) == 'view':
+                from cli.log import complete
+                files = complete().view()
+                return sorted(files)
+            else:
+                return []
 
 
 def do_config(rawcmd):

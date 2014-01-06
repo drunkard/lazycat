@@ -15,15 +15,31 @@ if not os.path.isdir(logpath):
     os.makedirs(logpath)
 
 
+class complete(list):
+    def __init__(self):
+        pass
+
+    def view(self):
+        """Returns a dict of file name, used for auto completion"""
+        files = sorted(glob.glob(logpath + "/*"))
+        files_list = []
+        for f in files:
+            files_list.append(os.path.basename(f))
+        return files_list
+
+
 class do_log(list):
     def __init__(self, rawcmd):
         from cli import complete_cmd
         cmd_list = rawcmd.split()
         self.cmd_list = cmd_list
+        self.rawcmd = rawcmd
         if len(cmd_list) < 2:  # We have only 2 levels by now.
             say.available_cmds(cli.log_l2)
             return
         l2cmd = complete_cmd(cmd_list[1], cli.log_l2)
+        if l2cmd is None:   # It's wrong command, complete_cmd failed
+            return
         # Start execution
         try:
             func = getattr(self, 'do_' + l2cmd)
