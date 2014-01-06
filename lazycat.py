@@ -18,7 +18,7 @@ support it. Pexpect is intended for UNIX-like operating systems.\033[0m""")
 
 __author__ = "Drunkard Zhang"
 __email__ = "gongfan193@gmail.com"
-__version__ = "0.2"
+__version__ = "0.1"
 __productname__ = "lazycat"
 __description__ = "A pseudo shell with restricted capability for AAA purpose."
 
