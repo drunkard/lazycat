@@ -313,11 +313,15 @@ class run(str):
 
     def with_log(self):
         from cli.log import get_log_file
+        rawcmd = self.rawcmd
+        # Check if arguments provided
+        if len(self.rawcmd_list) == 1:
+            os.system(rawcmd + ' -h')
+            return
         log_filename = get_log_file(self.rawcmd.replace(' ', '-'))
         fout = open(log_filename, "wb")
         self.fout = fout
         # Check if command exists
-        rawcmd = self.rawcmd
         if not cmd_exists(self.rawcmd_list[0]):
             say.no_sys_cmd(self.rawcmd_list[0])
             return False
