@@ -1,6 +1,7 @@
 """Common libraries that suitable for anywhere.
 Both my own or borrowed from internet.
 """
+import readline
 
 
 def cmd_exists(command, PATH=""):
@@ -48,3 +49,38 @@ def random_char(y):
     import string
     from random import choice
     return ''.join(choice(string.ascii_letters) for x in range(y))
+
+
+def TUI(prompt='no prompt'):
+    """Interface to user when logged in.
+    No arguments needed, just runi it:
+        TUI()
+    """
+    import cli
+    if prompt == 'no prompt':   # Determine prompt
+        prompt = cli.PROMPT
+    try:
+        readline.parse_and_bind('tab: complete')
+        readline.set_completer_delims(' ')
+    except Exception as e:
+        print(e)
+    # Start input loop
+    while True:
+        readline.set_completer(cli.MLCompleter().complete)
+        # Get input, and deal with exceptions
+        try:
+            rawcmd = input(prompt)
+        except KeyboardInterrupt:
+            """Ctrl-C"""
+            print ("^C")
+            continue
+        except EOFError:
+            """Ctrl-D"""
+            print('quit')
+            cli.do_quit('quit')
+        # Determine if the raw command is empty
+        rawcmd = rawcmd.lstrip()
+        if rawcmd:
+            cli.route(rawcmd)
+        else:
+            continue

@@ -4,11 +4,10 @@
 The entire ssh/telnet session is logged to a file, others won't be logged.
 """
 import logging
-import readline
 import sys
 
 try:
-    import cli
+    from cli import PROMPT
     from lib import history
 except ImportError as e:
     raise ImportError(e + """\033[05;37;41m
@@ -27,41 +26,13 @@ __description__ = "A pseudo shell with restricted capability for AAA purpose."
 DEBUG_LEVEL = logging.FATAL
 
 
-def ttywrapper():
-    from cli import PROMPT
-    try:
-        readline.parse_and_bind('tab: complete')
-        readline.set_completer_delims(' ')
-    except Exception as e:
-        print(e)
-    # Start input loop
-    while True:
-        readline.set_completer(cli.MLCompleter().complete)
-        # Get input, and deal with exceptions
-        try:
-            rawcmd = input(PROMPT)
-        except KeyboardInterrupt:
-            """Ctrl-C"""
-            print ("^C")
-            continue
-        except EOFError:
-            """Ctrl-D"""
-            print('quit')
-            cli.do_quit('quit')
-        # Determine if the raw command is empty
-        rawcmd = rawcmd.strip()
-        if rawcmd:
-            cli.route(rawcmd)
-        else:
-            continue
-
-
 if __name__ == "__main__":
     history.load()
     history.save()
     logging.basicConfig(format='DEBUG: %(message)s', level=DEBUG_LEVEL)
     try:
-        ttywrapper()
+        from lib import TUI
+        TUI(PROMPT)
     except (Exception, SystemExit) as e:
-        # After ttywrapper() exit, we get SystemExit exception here
+        # After TUI() exit, we get SystemExit exception here
         sys.exit(e)
