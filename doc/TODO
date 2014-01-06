@@ -1,3 +1,16 @@
+'config'	config lazycat self
+
+	user
+		add
+		del
+		disable
+		disable at 'some time'
+		enable
+	password
+	permission
+	tui
+
+
 'device-management' - network device config management. sub enviroment, does these things:
 	manages config policies to automatically retrieve config from network devices
 	save it locally
@@ -62,33 +75,32 @@
 	restart server type [upload|download]
 	stop server
 	show server information
+	show clients
 
 
-BUG:
-'log view'
+'log'
 	does not have a good pager
 	control code (from ssh, htop/atop) is kind hard to strip for me, by now.
 
-Features to impletion:
-DNS problem diag, at least include these commands:
-dns list		List our DNS, name and IP
+	view
+	search by date/time
+	search by device ip/name
+
+
+'dns'	DNS problem diag, at least include these commands:
+
+	list		List our DNS, name and IP
   	list-views	List views on our DNS, and query-source used to test for each view
   	resolve		Resolve the gave name from our DNS
+	resolve from 'view-name' xx.com
 	public-resolve	Resolve the gave name from famous public DNS
 	reverse-resolve	Resolve IP address to domain name, so called ARPA
+	trace		Manually trace resolve progress step by step
+
 
 Multi-level or tree struct privilege control, which limits user capibility.
 
 Store password or other critical data into encrypted loop back file, both usable for global or single user? This must be implemented before store password on server.
-
-
-'user'	# manages users, this should be manage users across multiple hosts.
-
-	add
-	del
-	disable
-	disable at 'some time'
-	enable
 
 
 'session'	# this feature need mature pexpect code:
@@ -100,8 +112,6 @@ A lot network device's config have same section on one function's config, like l
 	privilege config on devices
 
 Network trouble auto diag. Need to receive and parse logs from these devices. and then respond. Warn on administrator more precisely.
-
-*nix server health check, do dns/squid first.
 
 Add more interface, like web/GUI client, only CLI via ssh available now :(
 
@@ -122,3 +132,9 @@ session>
 	exit
 
 Anyway, it faces to general network administrator, and gonna be simplify their work a lot. At least I hope so ;)
+
+
+'show'	Show misc information
+
+	my-permission
+	jumper all
