@@ -8,7 +8,7 @@ import sys
 
 try:
     from cli import PROMPT
-    from lib import history
+    from lib import color, history
 except ImportError as e:
     raise ImportError(e + """\033[05;37;41m
 
@@ -24,12 +24,13 @@ __description__ = "A pseudo shell with restricted capability for AAA purpose."
 
 # DEBUG, FATAL
 DEBUG_LEVEL = logging.FATAL
+DEBUG_FORMAT = color.GREY_DARK + 'DEBUG: %(message)s' + color.OFF
 
 
 if __name__ == "__main__":
     history.load()
     history.save()
-    logging.basicConfig(format='DEBUG: %(message)s', level=DEBUG_LEVEL)
+    logging.basicConfig(format=DEBUG_FORMAT, level=DEBUG_LEVEL)
     try:
         from lib import TUI
         TUI(PROMPT)
