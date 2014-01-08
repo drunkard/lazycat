@@ -32,6 +32,7 @@ nolog_cmd = {
     'reset': {'cmd': 'reset',
               'desc': 'Reset current terminal'},
     'config': {'desc': 'Config current work enviroment'},
+    'dns': {'desc': 'DNS system trouble diagnosing'},
     'log': {'desc': 'Operation log management'},
     'quit': {'desc': 'Quit from current session'},
     'show': {'desc': 'Show misc informations'},
@@ -73,6 +74,15 @@ all_cmd = dict(nolog_cmd, **log_cmd)
 
 
 # Level 2 commands definations
+dns_l2 = {
+    'list': {'desc': 'List all DNS servers we have'},
+    'list-views': {'desc': 'List all views installed on DNS server'},
+    'resolve': {'desc': 'Resolve name to IP address, from all views'},
+    'resolve-in-view': {'desc': 'Resolve name to IP address, from given view'},
+    'reverse-resolve': {'desc': 'Resolve IP address to name, so called ARPA'},
+    'public-resolve': {'desc': 'Resolve given name from famous public DNS'},
+    'trace': {'desc': 'Manually trace resolve progress step by step'},
+}
 log_l2 = {
     'list': {'desc': 'List all operation log files'},
     'view': {'desc': 'View operation log file'},
@@ -186,6 +196,11 @@ class MLCompleter(object):  # Custom completer
 
 def do_config(rawcmd):
     say.not_implemented()
+
+
+def do_dns(rawcmd):
+    from cli.dns import do_dns
+    do_dns(rawcmd)
 
 
 def do_log(rawcmd):
