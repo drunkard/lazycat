@@ -45,6 +45,11 @@ def human_readable_size(nbytes):
     return '%s %s' % (f, suffixes[rank])
 
 
+def maxlen(objname):
+    """Return length of item in a object which is longest."""
+    return max(len(e) for e in objname)
+
+
 def random_char(y):
     import string
     from random import choice
