@@ -373,9 +373,12 @@ class route(str):
                 self.to_mapped_cmd(rawcmd)
         else:
             say.no_cmd(rawcmd)
+            av = [c for c in all_cmd.keys() if c.startswith(self.l1cmd)]
+            if av:
+                say.available_cmds(all_cmd, justshow=av)
 
     def to_unmapped_cmd(self, rawcmd):
-        # Try to match functions named starts with "do_"
+        """Find the function named starts with "do_", and invoke it"""
         import cli
         try:
             func = getattr(cli, 'do_' + self.l1cmd)
@@ -401,6 +404,11 @@ class run(str):
         self.global_pexpect_instance = None  # Used by signal handler
         self.rawcmd = rawcmd
         self.rawcmd_list = rawcmd.split()
+
+    def filter_input(self):
+        """Filter out user requested commands, or print WARN messages
+        when they do something really dangerous."""
+        pass
 
     def flushlog(self):
         fout = self.fout
@@ -429,6 +437,16 @@ class run(str):
         # print ("Windows size: %s x %s" % (a[0], a[1])) # debug
         self.global_pexpect_instance.setwinsize(a[0], a[1])
 
+    def start_session(self):
+        # Start pexpect session
+        try:
+            return pexpect.spawn('bash', ['-c', self.rawcmd])
+        except (SystemExit, pexpect.ExceptionPexpect) as e:
+            print(e)
+            return None
+        except (KeyboardInterrupt, pexpect.EOF, pexpect.TIMEOUT):
+            return None
+
     def with_log(self):
         from cli.log import get_log_file
         rawcmd = self.rawcmd
@@ -443,19 +461,9 @@ class run(str):
         if not cmd_exists(self.rawcmd_list[0]):
             say.no_sys_cmd(self.rawcmd_list[0])
             return False
-        # Start pexpect session
-        try:
-            thissession = pexpect.spawn('bash', ['-c', rawcmd])
-        except pexpect.ExceptionPexpect as e:
-            raise e
-        except SystemExit as e:
-            print(e)
-            return False
-        except (KeyboardInterrupt, pexpect.EOF, pexpect.TIMEOUT):
-            return False
-        except BaseException as e:
-            print(e)
-            return False
+        thissession = self.start_session()
+        if thissession is None:
+            return None
         thissession.logfile = fout
         self.global_pexpect_instance = thissession
         signal.signal(signal.SIGWINCH, self.sigwinch_passthrough)
