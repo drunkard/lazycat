@@ -3,7 +3,7 @@
 import logging
 import sys
 try:
-    from lib import color
+    from lib import color, maxlen
 except ImportError as e:
     sys.exit(str(e) + "ERROR: some modules import failed")
 
@@ -11,8 +11,9 @@ except ImportError as e:
 class available_cmds(object):
     """Print all available commands in data objects.
     Both list and dict are supported."""
-    def __init__(self, cmdlist, msg=""):
+    def __init__(self, cmdlist, justshow=[], msg=""):
         self.cmdlist = cmdlist
+        self.justshow = sorted(justshow)
         if msg == "":
             msg = "All available commands:"
         print(msg)
@@ -24,8 +25,13 @@ class available_cmds(object):
             self.print_list()
 
     def print_dict(self):
-        align = 17
-        k = sorted(self.cmdlist.keys())
+        if self.justshow:
+            align = maxlen(self.justshow) + 4
+            k = self.justshow
+        else:
+            # No filter, print all
+            align = maxlen(self.cmdlist.keys()) + 4
+            k = sorted(self.cmdlist.keys())
         for i in k:
             desc = self.cmdlist.get(i).get('desc')
             print('  %s%s' % (i.ljust(align), desc))
@@ -43,7 +49,8 @@ def internal_error():
 
 
 def no_cmd(cmdname):
-    print("%sUnknown command:%s %s" % (color.RED_BG, color.OFF, cmdname))
+    print("%sUnknown command:%s %s" %
+          (color.RED_BG, color.OFF, cmdname.replace('_', '-')))
 
 
 def no_sys_cmd(cmdname):
