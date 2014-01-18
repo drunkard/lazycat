@@ -1,0 +1,23 @@
+Color convention
+
+cyan
+ - command
+
+green
+ - optional arguments
+ - DNS view name, treated as standalone DNS
+
+green bold
+ - OK like messages
+
+magenta
+ - optional messages or results
+
+red bold
+ - FAIL like messages
+
+white
+ - text table header
+
+yellow bold
+ - warning messages
