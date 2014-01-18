@@ -1,0 +1,102 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+servers = {
+    # 'Name': {'ip': 'IP', 'class': 'Class', 'loc': 'Location'},
+    'dns8': {'ip': '211.161.192.67',
+             'class': 'iterator',
+             'loc': 'Zhabei, Shanghai, China',
+             # views installed on this DNS server
+             'view_list': ['default', 'bgp', 'business'],
+             'addrtype': 'ChinaTelecom'},
+
+    # cache servers
+    'idcns1': {'ip': '211.161.192.68',
+               'class': 'cache',
+               'loc': 'Zhabei, Shanghai'},
+
+    # cache cluster VIPs
+    'bas-1-primary': {'ip': '10.2.1.26',
+                      'class': 'cache-cluster',
+                      'loc': 'China'},
+    'bas-1-secondary': {'ip': '10.2.1.27',
+                        'class': 'cache-cluster',
+                        'loc': 'China'},
+
+    # public DNS servers
+    # 114
+    '114dns-114': {'ip': '114.114.114.114',
+                   'class': 'public',
+                   'loc': 'China.Nanjing',
+                   'owner': '114dns'},
+    # ChinaTelecom
+    'tel-pd': {'ip': '202.96.209.133',
+               'class': 'public',
+               'loc': 'China.Shanghai.Pudong',
+               'owner': 'ChinaTelecom-Shanghai'},
+    'tel-px': {'ip': '202.96.209.5',
+               'class': 'public',
+               'loc': 'China.Shanghai.Puxi',
+               'owner': 'ChinaTelecom-Shanghai'},
+    # ChinaUnicom
+    'unicom-chj': {'ip': '210.22.70.3',
+                   'class': 'public',
+                   'loc': 'China.Shanghai.Caohejing',
+                   'owner': 'ChinaUnicom-Shanghai'},
+    'unicom-lk': {'ip': '210.22.84.3',
+                  'class': 'public',
+                  'loc': 'China.Shanghai.Lekai',
+                  'owner': 'ChinaUnicom-Shanghai'},
+    # level3
+    'level3-a': {'ip': '4.2.2.1',
+                 'class': 'public',
+                 'loc': 'United States',
+                 'owner': 'level3'},
+    'level3-b': {'ip': '4.2.2.2',
+                 'class': 'public',
+                 'loc': 'United States',
+                 'owner': 'level3'},
+    # 'level3-c': {'ip': '4.2.2.3', 'class': 'public', 'owner': 'level3'},
+    # 'level3-d': {'ip': '4.2.2.4', 'class': 'public', 'owner': 'level3'},
+    # 'level3-e': {'ip': '4.2.2.5', 'class': 'public', 'owner': 'level3'},
+    # 'level3-f': {'ip': '4.2.2.6', 'class': 'public', 'owner': 'level3'},
+    # google
+    'google-a': {'ip': '8.8.8.8',
+                 'class': 'public',
+                 'loc': 'United States',
+                 'owner': 'google'},
+    'google-b': {'ip': '8.8.4.4',
+                 'class': 'public',
+                 'loc': 'United States',
+                 'owner': 'google'},
+    'au-uwa': {'ip': '130.95.128.1',
+               'class': 'public',
+               'loc': 'University of Western Australia',
+               'owner': 'UWA'},
+    'de-Hetzner': {'ip': '78.47.240.173',
+                   'class': 'public',
+                   'loc': 'Germany',
+                   'owner': 'Hetzner Online AG'},
+    'ru-SkyDNS': {'ip': '195.46.39.39',
+                  'class': 'public',
+                  'loc': 'Россия Екатеринбург',
+                  'owner': 'SkyDNS'},
+}
+
+views = {
+    'business': {'desc': 'This is view for business users',
+                 'match-ip': ['10.0.0.0/8',
+                              '172.16.16.0/24',
+                              ],
+                 # Source IP used to query on this view
+                 'source-ip': [],
+                 # rndc config, source IP for rndc to execute rndc commands
+                 'rndc-ip': [],
+                 },
+    'default': {'desc': 'Default',
+                'match-ip': ['0.0.0.0/0'],
+                # Source IP used to query on this view
+                'source-ip': [],
+                # rndc config, source IP for rndc to execute rndc commands
+                'rndc-ip': [],
+                },
+}

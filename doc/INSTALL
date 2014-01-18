@@ -48,3 +48,11 @@ DEPENDENCIES
 	# vsftpd
 	useradd -m -c "FTP user upload devconf" -s /sbin/nologin -d /data/lazycat/devconf/ up
 	useradd -m -c "FTP user readonly" -s /sbin/nologin -d /data/lazycat/devconf/ ro
+
+
+=====================
+DEPENDENCIES - system
+=====================
+ iproute2
+ dig, rndc
+	"dns flush*" need this command, and rndc interface of bind should open for remote execution

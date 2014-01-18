@@ -29,26 +29,62 @@ OMIT_OUTPUT = ['atop', 'htop', 'iotop', 'iftop', 'dnstop']
 Should be write as inverted tree structure, higher level dict includes
 lower level dict with 'nextlevel' key.
 """
+# Level 3 commands definations
+dns_list_l3 = {
+    '<name>':
+    {'desc': 'List all DNS servers starts with <name>'},
+    'all':
+    {'desc': 'List all DNS servers we know'},
+    'cache':
+    {'desc': 'List all cache DNS servers we have'},
+    'cache-cluster':
+    {'desc': 'List all cache cluster DNS servers we have'},
+    'iterator':
+    {'desc': 'List all iteration DNS servers we have'},
+    'public':
+    {'desc': 'List all public DNS servers we use for trouble-shooting'},
+    'view':
+    {'desc': 'Views installed on DNS server'},
+}
+dns_arpa_l3 = {
+    '<ip>':
+    {'desc': 'Resolve from non-cache servers'},
+    '<ip> <server name>':
+    {'desc': 'Resolve from specific server'},
+    '<ip> all':
+    {'desc': 'Resolve from all servers'},
+    '<ip> public':
+    {'desc': 'Resolve from famous public DNS'},
+}
+dns_resolve_l3 = {
+    '<domain name>':
+    {'desc': 'Resolve from non-cache servers'},
+    '<domain name> <server name>':
+    {'desc': 'Resolve from specific server'},
+    '<domain name> all':
+    {'desc': 'Resolve from all servers'},
+    '<domain name> public':
+    {'desc': 'Resolve from famous public DNS'},
+}
+
 # Level 2 commands definations
 dns_l2 = {
+    'arpa':
+    {'desc': 'Resolve IP address to name, so called ARPA',
+     'nextlevel': dns_arpa_l3},
     'flush':
-    {'desc': 'Flush cache on DNS server'},
+    {'desc': 'Flush one name out of cache on our iteration DNS servers'},
+    # 'flush-tree':
+    # {'desc':
+    #  'Flush cache of all names under given name on DNS server, DANGEROUS'},
     'list':
-    {'desc': 'List all DNS servers we have'},
-    'list-public':
-    {'desc': 'List public DNS servers we chosen for trouble-shooting'},
-    'list-view':
-    {'desc': 'List all views installed on DNS server'},
+    {'desc': 'List DNS server related information',
+     'nextlevel': dns_list_l3},
+    'one-key-diag':
+    {'desc': 'Super easy trouble locator'},
     'resolve':
-    {'desc': 'Resolve name to IP, from all views, on non-cache server'},
-    'resolve-from-all':
-    {'desc': 'Resolve name to IP address, from all views, on all servers'},
-    'resolve-from-public':
-    {'desc': 'Resolve name to IP address, from famous public DNS'},
-    'resolve-on-view':
-    {'desc': 'Resolve name to IP address, from given view'},
-    'resolve-arpa':
-    {'desc': 'Resolve IP address to name, so called ARPA'},
+    {'desc': 'Resolve name to IP address, more options on sub-commands',
+     'nextlevel': dns_resolve_l3},
     'trace':
     {'desc': 'Manually trace resolve progress step by step'},
 }
@@ -274,10 +310,11 @@ class MLCompleter(object):  # Custom completer
             if level < idx:
                 d = d.get(fullcmd_list[level]).get('nextlevel')
             else:
-                r = [k for k in d.keys()]
-        if r is None:
+                r = [k for k in d.keys() if not k.startswith('<')]
+        if r is None or r == []:
             return self.module_specific_options(fullcmd)
         else:
+            logging.debug("possible_options: won't do module_specific_options")
             return r
 
     def module_specific_options(self, fullcmd):
@@ -285,7 +322,7 @@ class MLCompleter(object):  # Custom completer
         cl = fullcmd.split()
         modname = 'cli.' + cl[0]
         logging.debug('MLCompleter: load module named: %s' % modname)
-        importlib.import_module(modname)
+        # importlib.import_module(modname)
         mod = importlib.import_module(modname)
         try:
             complete_class = getattr(mod, 'complete')
@@ -341,7 +378,7 @@ def do_tree(rawcmd, d=all_cmd, level=1):
     for k, v in sorted(d.items()):
         if k != 'nextlevel' and isinstance(v, dict):
             desc = v.get('desc')
-            print(space + k.ljust(just), desc)
+            print(space + k.ljust(just + 1), desc)
         if isinstance(v, dict) and v.get('nextlevel') is not None:
             level += 1
             do_tree('', d=v.get('nextlevel'), level=level)
@@ -376,6 +413,8 @@ class route(str):
             av = [c for c in all_cmd.keys() if c.startswith(self.l1cmd)]
             if av:
                 say.available_cmds(all_cmd, justshow=av)
+            else:
+                say.available_cmds(all_cmd)
 
     def to_unmapped_cmd(self, rawcmd):
         """Find the function named starts with "do_", and invoke it"""
@@ -463,6 +502,7 @@ class run(str):
             return False
         thissession = self.start_session()
         if thissession is None:
+            fout.close()
             return None
         thissession.logfile = fout
         self.global_pexpect_instance = thissession
