@@ -1,4 +1,5 @@
-#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+import string
 
 # Color defines
 OFF = '\033[0m'
@@ -31,3 +32,32 @@ CYAN_BOLD = '\033[1;36m'
 
 WHITE = '\033[0;37m'
 WHITE_BOLD = '\033[1;37m'
+
+
+all_colors = [x for x in dir()
+              for i in string.ascii_uppercase
+              if x.startswith(i)]
+all_colors.remove('OFF')
+all_colors.remove('BLINK')
+
+
+# Convert all defined colors to function who named as lower named color name.
+functext = """
+def FUNCNAME(text):
+    import inspect
+    from lib import color
+    if not isinstance(text, str):
+        return text
+    myname = inspect.stack()[0][3]
+    T = myname.upper()
+    try:
+        color_name = getattr(color, T)
+        return color_name + text + OFF
+    except AttributeError:
+        return text
+"""
+for c in all_colors:
+    donefunc = functext.replace('FUNCNAME', c.lower())
+    exec(donefunc)
+
+del c, donefunc, functext
