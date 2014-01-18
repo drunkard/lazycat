@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Common libraries that suitable for anywhere.
 Both my own or borrowed from internet.
 """
@@ -17,6 +18,17 @@ def cmd_exists(command, PATH=""):
         return False
     else:
         return True
+
+
+def get_local_ip():
+    """Get all local IP addresses.
+    Only get from interfaces whose status is UP.
+    """
+    cmd = 'ip -o addr show up'
+    o = syscmd_stdout(cmd).split('\n')
+    iplist = [line.split()[3] for line in o if line]
+    return [ip for ip in iplist if ip and ip != '127.0.0.1/8'
+            and ip != '::1/128']
 
 
 def hanzi2pinyin(hanzi):
@@ -47,7 +59,10 @@ def human_readable_size(nbytes):
 
 def maxlen(objname):
     """Return length of item in a object which is longest."""
-    return max(len(e) for e in objname)
+    if objname:
+        return max(len(e) for e in objname)
+    else:
+        return 0
 
 
 def random_char(y):
@@ -56,9 +71,17 @@ def random_char(y):
     return ''.join(choice(string.ascii_letters) for x in range(y))
 
 
+def syscmd_stdout(cmd):
+    """Accept string command, and return stdout of system command."""
+    from subprocess import PIPE, Popen
+    cmd_list = cmd.split()
+    o = Popen(cmd_list, stdout=PIPE).stdout.read()
+    return o.decode('utf-8')
+
+
 def TUI(prompt='no prompt'):
     """Interface to user when logged in.
-    No arguments needed, just runi it:
+    No arguments needed, just run it:
         TUI()
     """
     import cli
