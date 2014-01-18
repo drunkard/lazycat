@@ -8,6 +8,10 @@ except ImportError as e:
     sys.exit(str(e) + "ERROR: some modules import failed")
 
 
+fail = '%sfail%s' % (color.RED_BOLD, color.OFF)
+ok = '%sok%s' % (color.RED_BOLD, color.OFF)
+
+
 class available_cmds(object):
     """Print all available commands in data objects.
     Both list and dict are supported."""
