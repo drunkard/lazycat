@@ -56,3 +56,21 @@ DEPENDENCIES - system
  iproute2
  dig, rndc
 	"dns flush*" need this command, and rndc interface of bind should open for remote execution
+
+
+===================
+CONFIGURATION FILES
+===================
+ devconf
+	You need to write a config etc/dev.py, by following example
+	etc/dev.py.example
+
+	NOTE:
+	Spanning new classes of supported type of device is not possible yet,
+	you have to modify source code to do that. It's very easy, just add a
+	line like "model_wanted = model" in dm/model/__init__.py
+
+ lazycat
+	'dns'
+	If you want to use this feature, you may need to write your own config:
+	etc/mydns.py, by following etc/mydns.py.example
