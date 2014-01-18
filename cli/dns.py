@@ -401,7 +401,8 @@ class do_dns(str):
 
     def print_result(self, ShuTong):
         if ShuTong.get('rdata_fail_reason'):
-            print(color.red_bold(ShuTong.get('rdata_fail_reason')))
+            print('view:', ShuTong.get('view'),
+                  color.red_bold(ShuTong.get('rdata_fail_reason')))
             return
         rdata = ShuTong.get('rdata')
         server = ShuTong.get('server')
@@ -419,7 +420,7 @@ class do_dns(str):
         else:
             self.doing_server = server
             if not rdata:
-                print('Resolve %s, got nothing from %s by view %s' %
+                print('Resolve %s, got nothing from %s by view: %s' %
                       (say.fail, color.green(server),
                        color.green(ShuTong.get('view'))))
                 return
@@ -524,14 +525,16 @@ class do_dns(str):
 
     def roll_flush_final(self, ShuTong):
         # Print header
-        print('Flushing %s on %s => %s' %
-              (ShuTong.get('name'), color.green(ShuTong.get('server')),
-               color.green(ShuTong.get('server_ip'))))
-        # Determine rndc config
         server = ShuTong.get('server')
+        if self.doing_server != server:
+            print('Flushing %s on %s => %s' %
+                  (ShuTong.get('name'), color.green(ShuTong.get('server')),
+                   color.green(ShuTong.get('server_ip'))))
+        # Determine rndc config
         rc = servers.get(server).get('rndc-conf')
         if rc is not None:
             ShuTong.update({'rndc_conf': rc})
+            # else: default not changed
         rndc_conf = ShuTong.get('rndc_conf')
         if not os.path.isfile(rndc_conf):
             say.nofile(rndc_conf, prefix="rndc config")
