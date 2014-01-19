@@ -72,7 +72,7 @@ except ImportError:
                     },
     }
 
-dig2 = 'dig +nocmd +multiline +noall +answer '
+dig2 = 'dig +nocmd +multiline +noall +answer +stats '
 rndc2 = '/usr/sbin/rndc '
 rndc_conf = '/chroot/etc/rndc.conf'
 init_ShuTong = {  # 诸葛亮身边的书童？
@@ -173,7 +173,17 @@ class do_dns(str):
                 ol.append(i.split())
         return ol
 
-    def checked_result(self, ShuTong):
+    def update_resolve_query_time(self, ShuTong):
+        rdata = ShuTong.get('rdata')
+        for i in rdata:
+            try:
+                if i[1] == 'Query' and i[2] == 'time:':
+                    ShuTong.update({'time': ' '.join(i[3:])})
+                    break
+            except IndexError:
+                pass
+
+    def check_result(self, ShuTong):
         """Check output of dig, identify these results:
             timeout
             refused
@@ -195,7 +205,7 @@ class do_dns(str):
             roll name on view on one server
             real resolve
         """
-        ShuTong = init_ShuTong
+        ShuTong = init_ShuTong.copy()
         ShuTong = self.read_resolve_args(ShuTong)
         name_list = ShuTong.get('name_list')
         if name_list == []:
@@ -214,7 +224,7 @@ class do_dns(str):
             roll name on view on one server
             real flush
         """
-        ShuTong = init_ShuTong
+        ShuTong = init_ShuTong.copy()
         name_list = self.read_arg3()
         server_list = [k for k, v in servers.items()
                        if v.get('class') == 'iterator']
@@ -286,7 +296,7 @@ class do_dns(str):
             roll name on view on one server
             real resolve
         """
-        ShuTong = init_ShuTong
+        ShuTong = init_ShuTong.copy()
         ShuTong = self.read_resolve_args(ShuTong)
         name_list = ShuTong.get('name_list')
         if name_list == []:
@@ -400,6 +410,7 @@ class do_dns(str):
         print(help_info)
 
     def print_result(self, ShuTong):
+        # TODO: print as table
         if ShuTong.get('rdata_fail_reason'):
             print('view:', ShuTong.get('view'),
                   color.red_bold(ShuTong.get('rdata_fail_reason')))
@@ -613,7 +624,7 @@ class do_dns(str):
             # TODO timeit while resolve
             logging.info('exec: %s' % cmd)
             ShuTong.update({'rdata': syscmd_stdout(cmd)})
-            self.checked_result(ShuTong)
+            self.check_result(ShuTong)
             if ShuTong.get('rdata_fail_reason'):
                 array = []
             else:
@@ -622,6 +633,7 @@ class do_dns(str):
             # User interrupted via Ctrl-C
             array = []
         ShuTong.update({'rdata': array})
+        self.update_resolve_query_time(ShuTong)
         self.update_array(ShuTong)
         self.print_result(ShuTong)
 
@@ -635,6 +647,8 @@ class do_dns(str):
         newa = []
         done = False
         for i in a:
+            if i and i[0] == ';;':  # ignore comment lines from dig output
+                continue
             i.pop(2)  # remove 'class', IN
             if done:
                 i[0] = ''  # add view name, just for first line
