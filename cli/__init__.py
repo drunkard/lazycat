@@ -30,6 +30,12 @@ Should be write as inverted tree structure, higher level dict includes
 lower level dict with 'nextlevel' key.
 """
 # Level 3 commands definations
+config_debug_l3 = {
+    'on':
+    {'desc': 'Turn on debugging'},
+    'off':
+    {'desc': 'Turn off debugging'},
+}
 dns_list_l3 = {
     '<name>':
     {'desc': 'List all DNS servers starts with <name>'},
@@ -68,6 +74,11 @@ dns_resolve_l3 = {
 }
 
 # Level 2 commands definations
+config_l2 = {
+    'debug':
+    {'desc': 'Debug configuration about me',
+     'nextlevel': config_debug_l3},
+}
 dns_l2 = {
     'arpa':
     {'desc': 'Resolve IP address to name, so called ARPA',
@@ -126,7 +137,8 @@ nolog_cmd = {
     {'cmd': 'clear ',
      'desc': 'Clear the terminal screen'},
     'config':
-    {'desc': 'Config current work enviroment'},
+    {'desc': 'Config current work enviroment',
+     'nextlevel': config_l2},
     'dns':
     {'desc': 'DNS system trouble diagnosing',
      'nextlevel': dns_l2},
@@ -338,7 +350,8 @@ class MLCompleter(object):  # Custom completer
 
 
 def do_config(rawcmd):
-    say.not_implemented()
+    from cli.config import do_config
+    do_config(rawcmd)
 
 
 def do_dns(rawcmd):

@@ -25,12 +25,18 @@ __description__ = "A pseudo shell with restricted capability for AAA purpose."
 # DEBUG, FATAL
 DEBUG_LEVEL = logging.FATAL
 DEBUG_FORMAT = color.GREY_DARK + 'DEBUG: %(message)s' + color.OFF
+# logging.basicConfig(format=DEBUG_FORMAT, level=DEBUG_LEVEL)
+handler = logging.StreamHandler()
+formatter = logging.Formatter(DEBUG_FORMAT)
+handler.setFormatter(formatter)
+root_logger = logging.getLogger()
+root_logger.addHandler(handler)
+# root_logger.setLevel(DEBUG_LEVEL)  # Config by: config debug
 
 
 if __name__ == "__main__":
     history.load()
     history.save()
-    logging.basicConfig(format=DEBUG_FORMAT, level=DEBUG_LEVEL)
     try:
         from lib import TUI
         TUI(PROMPT)
