@@ -72,7 +72,7 @@ except ImportError:
                     },
     }
 
-dig2 = 'dig +nocmd +multiline +noall +answer +stats '
+dig2 = 'dig +time=1 +tries=1 +nocmd +multiline +noall +answer +stats '
 rndc2 = '/usr/sbin/rndc '
 rndc_conf = '/chroot/etc/rndc.conf'
 init_ShuTong = {  # 诸葛亮身边的书童？
@@ -87,10 +87,19 @@ init_ShuTong = {  # 诸葛亮身边的书童？
     'arpa-opt': '',  # Set to '-x' if doing arpa lookup
     'cmd': dig2,
     'rndc_conf': rndc_conf,
+    # 'rdata' changes while processing, 'rdata_final' holds final results
     'rdata': [],
+    'rdata_final': [],
     'rdata_fail_reason': '',
     'time': 'Not counted',
 }
+# rdata_final array format
+SERVER = 0
+VIEW = 1
+TTL = 2
+RDATATYPE = 3
+RDATA = 4
+TIME = 5
 # The number of usable IP addresses must be more than views installed.
 view_supported = True
 
@@ -207,14 +216,17 @@ class do_dns(str):
         """
         ShuTong = init_ShuTong.copy()
         ShuTong = self.read_resolve_args(ShuTong)
+        # TODO: check if got valid IP
         name_list = ShuTong.get('name_list')
         if name_list == []:
             self.print_help_resolve(cmd='dns arpa', name='8.8.8.8')
             return
         ShuTong.update({'arpa-opt': ' -x '})
         for ip in sorted(name_list):
+            ShuTong = self.init_ShuTong(ShuTong)
             ShuTong.update({'name': ip})
             self.roll_resolve_by_server(ShuTong)
+            self.print_result(ShuTong)
         del ShuTong
 
     def do_flush(self):
@@ -304,14 +316,23 @@ class do_dns(str):
             return
         ShuTong.update({'arpa-opt': ''})
         for n in name_list:
+            ShuTong = self.init_ShuTong(ShuTong)
             ShuTong.update({'name': n})
             self.roll_resolve_by_server(ShuTong)
+            self.print_result(ShuTong)
         del ShuTong
 
     def do_trace(self):
         """Do: dig +trace ..."""
         # FIXME: implement me
         say.not_implemented()
+
+    def init_ShuTong(self, ST):
+        """All cumulated keys need to be initialized before reuse."""
+        l = ['rdata', 'rdata_final', 'rdata_fail_reason']
+        for i in l:
+            ST.update({i: []})
+        return ST
 
     def list_filter_by_class(self, showClass=''):
         """General purpose filter while print various classes of DNS
@@ -371,10 +392,10 @@ class do_dns(str):
                           for i in toshow.values()
                           if i.get('loc') is not None] + ['Location'])
         fmt = '%s  %s  %s  %s'
-        fmt_header = color.white(fmt)
+        fmt_hdr = color.white(fmt)
         # Print header
-        print(fmt_header % ('Name'.ljust(name_max), 'IP'.ljust(ip_max),
-                            'Class'.ljust(class_max), 'Location'))
+        print(fmt_hdr % ('Name'.ljust(name_max), 'IP'.ljust(ip_max),
+                         'Class'.ljust(class_max), 'Location'))
         print(fmt % ('-' * name_max, '-' * ip_max,
                      '-' * class_max, '-' * loc_max))
         for k, v in sorted(toshow.items()):
@@ -410,47 +431,53 @@ class do_dns(str):
         print(help_info)
 
     def print_result(self, ShuTong):
-        # TODO: print as table
-        if ShuTong.get('rdata_fail_reason'):
-            print('view:', ShuTong.get('view'),
-                  color.red_bold(ShuTong.get('rdata_fail_reason')))
-            return
-        rdata = ShuTong.get('rdata')
-        server = ShuTong.get('server')
-        # Print header
+        print('\nName: %s' % (color.green(ShuTong.get('name'))))
+        r = ShuTong.get('rdata_final')
+        ShuTong.update({'rdata_final': []})
+        # Get max values for alignment
+        # server_max = maxlen(ShuTong.get('server_list') + ['SERVER'])
         view_max = maxlen([x for x in views.keys() if x] + ['VIEW'])
-        ttl_max = maxlen([x[1] for x in rdata if x] + ['TTL'])
-        rdatatype_max = maxlen([x[2] for x in rdata if x] + ['TYPE'])
-        rdata_max = maxlen([x[3] for x in rdata if x] + ['RESULT'])
-        time_max = maxlen([x[4] for x in rdata if x] + ['TIME'])
+        ttl_max = maxlen([x[TTL] for x in r if x] + ['TTL'])
+        rdatatype_max = maxlen([x[RDATATYPE] for x in r if x] + ['TYPE'])
+        rdata_max = maxlen([x[RDATA] for x in r if x] + ['RESULT'])
+        time_max = maxlen([x[TIME] for x in r if x] + ['TIME'])
         fmt = '%s   %s   %s   %s   %s'
-        fmt_header = color.white(fmt)
+        fmt_hdr = color.white(fmt)
         d = view_max + ttl_max + rdatatype_max + rdata_max + time_max + 12
-        if self.doing_server == server:
-            print('-' * d)
-        else:
-            self.doing_server = server
-            if not rdata:
-                print('Resolve %s, got nothing from %s by view: %s' %
-                      (say.fail, color.green(server),
-                       color.green(ShuTong.get('view'))))
-                return
-            print(fmt_header % ('VIEW'.ljust(view_max),
-                                'TTL'.ljust(ttl_max),
-                                'TYPE'.ljust(rdatatype_max),
-                                'RESULT'.ljust(rdata_max),
-                                'TIME'.ljust(time_max)))
-            print('-' * d)
+        print(fmt_hdr % ('VIEW'.ljust(view_max),
+                         'TTL'.ljust(ttl_max),
+                         'TYPE'.ljust(rdatatype_max),
+                         'RESULT'.ljust(rdata_max),
+                         'TIME'.ljust(time_max)))
         # Print rdata
-        for line in rdata:
-            rdatatype = line[2]
-            if rdatatype == 'CNAME':
-                rdatatype = color.magenta(rdatatype)
-            print(fmt % (line[0].ljust(view_max),
-                         line[1].ljust(ttl_max),
-                         rdatatype.ljust(rdatatype_max),
-                         line[3].ljust(rdata_max),
-                         line[4].ljust(time_max)))
+        last_server = 'firstRun'
+        last_view = 'firstRun'
+        for i in r:
+            pserver = i[SERVER]
+            pview = i[VIEW]
+            if pserver and pserver != last_server:
+                pserver_rbar = ' /' + '='.ljust((d - 6 - len(pserver)), '=')
+                print(color.white_bold('==/ %s%s') %
+                      (color.green_bold(pserver),
+                       color.white_bold(pserver_rbar)))
+                last_server = pserver
+            else:
+                if pview and not last_view:
+                    print('-' * d)
+                else:
+                    last_view = pview
+            if i[TTL] == 'FAIL_MARK':
+                msg = color.red_bold(i[RDATA])
+                print('%s   %s' % (pview.ljust(view_max), msg.ljust(ttl_max)))
+                continue
+            prdatatype = i[RDATATYPE]
+            if prdatatype == 'CNAME':
+                prdatatype = color.magenta(prdatatype)
+            print(fmt % (pview.ljust(view_max),
+                         i[TTL].ljust(ttl_max),
+                         prdatatype.ljust(rdatatype_max),
+                         i[RDATA].ljust(rdata_max),
+                         i[TIME].ljust(time_max)))
 
     def read_arg3(self):
         try:
@@ -477,7 +504,10 @@ class do_dns(str):
             return []
 
     def read_resolve_args(self, holder):
-        # TODO: check if it's valid IP or name
+        """DNS servers should be defined starts with @..., so multiple
+        servers or multiple sets are supported, all others are treated
+        as names."""
+        # TODO __doc__
         server_list = []
         name_list = []
         # Determine server_list, match and reassign a value
@@ -609,19 +639,10 @@ class do_dns(str):
             self.roll_resolve_final(ShuTong)
 
     def roll_resolve_final(self, ShuTong):
-        # Print header
-        server = ShuTong.get('server')
-        name = ShuTong.get('name')
-        server_ip = ShuTong.get('server_ip')
-        if self.doing_server != server:
-            print('\nBy %s => %s Name: %s' % (color.green(server),
-                                              color.green(server_ip),
-                                              color.green(name)))
         # Resolve started
         self.update_resolve_cmd(ShuTong)
         cmd = ShuTong.get('cmd')
         try:
-            # TODO timeit while resolve
             logging.info('exec: %s' % cmd)
             ShuTong.update({'rdata': syscmd_stdout(cmd)})
             self.check_result(ShuTong)
@@ -634,12 +655,17 @@ class do_dns(str):
             array = []
         ShuTong.update({'rdata': array})
         self.update_resolve_query_time(ShuTong)
-        self.update_array(ShuTong)
-        self.print_result(ShuTong)
+        self.update_rdata(ShuTong)
+        self.update_rdata_final(ShuTong)
 
-    def update_array(self, ShuTong):
+    def update_rdata(self, ShuTong):
         if ShuTong.get('rdata_fail_reason'):
+            logging.debug('update_rdata: fill with rdata_fail_reason')
+            newa = [[ShuTong.get('server'), ShuTong.get('view'),
+                    'FAIL_MARK', '', ShuTong.get('rdata_fail_reason'), '']]
+            ShuTong.update({'rdata': newa})
             return
+        logging.debug('update_rdata: fill with rdata')
         a = ShuTong.get('rdata')
         view = ShuTong.get('view')
         if not a or not view:
@@ -652,13 +678,24 @@ class do_dns(str):
             i.pop(2)  # remove 'class', IN
             if done:
                 i[0] = ''  # add view name, just for first line
+                i.insert(0, '')  # add server name
                 i.append('')  # add time count, just for first line
             else:
                 i[0] = view
+                i.insert(0, ShuTong.get('server'))
                 i.append(ShuTong.get('time'))
                 done = True
             newa.append(i)
+        # TODO fill what if resolve failed ?
         ShuTong.update({'rdata': newa})
+
+    def update_rdata_final(self, ShuTong):
+        logging.debug('enter update_rdata_final')
+        newrdata = ShuTong.get('rdata_final')
+        for i in ShuTong.get('rdata'):
+            newrdata.append(i)
+        ShuTong.update({'rdata_final': newrdata})
+        ShuTong.update({'rdata': ''})
 
     def update_resolve_cmd(self, ShuTong):
         cmd = dig2
