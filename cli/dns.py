@@ -324,8 +324,13 @@ class do_dns(str):
 
     def do_trace(self):
         """Do: dig +trace ..."""
-        # FIXME: implement me
-        say.not_implemented()
+        try:
+            name = self.read_arg3()[0]
+        except IndexError:
+            self.print_help_trace()
+            return
+        cmd = 'dig +trace +nodnssec %s' % name
+        print(syscmd_stdout(cmd))
 
     def init_ShuTong(self, ST):
         """All cumulated keys need to be initialized before reuse."""
@@ -429,6 +434,10 @@ class do_dns(str):
         help_info = help_info.replace('<GREEN>', color.GREEN)
         help_info = help_info.replace('<OFF>', color.OFF)
         print(help_info)
+
+    def print_help_trace(self):
+        msg = """Need name to process with, examples:"""
+        print(msg + '\n    %s www.google.com' % color.cyan('dns trace'))
 
     def print_result(self, ShuTong):
         print('\nName: %s' % (color.green(ShuTong.get('name'))))
