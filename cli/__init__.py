@@ -55,21 +55,21 @@ dns_list_l3 = {
 dns_arpa_l3 = {
     '<ip>':
     {'desc': 'Resolve from non-cache servers'},
-    '<ip> <server name>':
+    '<ip> @<server name>':
     {'desc': 'Resolve from specific server'},
-    '<ip> all':
+    '<ip> @all':
     {'desc': 'Resolve from all servers'},
-    '<ip> public':
+    '<ip> @public':
     {'desc': 'Resolve from famous public DNS'},
 }
 dns_resolve_l3 = {
     '<domain name>':
     {'desc': 'Resolve from non-cache servers'},
-    '<domain name> <server name>':
+    '<domain name> @<server name>':
     {'desc': 'Resolve from specific server'},
-    '<domain name> all':
+    '<domain name> @all':
     {'desc': 'Resolve from all servers'},
-    '<domain name> public':
+    '<domain name> @public':
     {'desc': 'Resolve from famous public DNS'},
 }
 

@@ -139,6 +139,7 @@ class complete(list):
         logging.debug('dns complete: resolve: working')
         spec_name = ['all', 'public']
         spec_name += [x for x in servers.keys()]
+        spec_name = ['@' + x for x in spec_name]
         return spec_name
 
 
@@ -417,23 +418,25 @@ class do_dns(str):
                          classname.ljust(class_max), loc))
 
     def print_help_resolve(self, cmd='', name=''):
-        help_info = """Need name to process with, examples:
-
+        hdr = 'Need name to process with, multiple servers or names are \
+            supported, examples:'
+        help_info = """
         Resolve on our non-cache DNS:
             CMD NAME [...]
         Resolve on all our non-cache and cache DNS:
-            CMD <GREEN>all<OFF> NAME
+            CMD <GREEN>@all<OFF> NAME
         Resolve on all famous public DNS:
-            CMD <GREEN>public<OFF> NAME
+            CMD <GREEN>@public<OFF> NAME
         Resolve on specific DNS:
-            CMD <GREEN>dns1<OFF> NAME
+            CMD <GREEN>@dns1<OFF> NAME
+            CMD <GREEN>@dns1 @dns2<OFF> NAME
         """
         help_info = help_info.replace('        ', '')
         help_info = help_info.replace('CMD', color.cyan(cmd))
         help_info = help_info.replace('NAME', name)
         help_info = help_info.replace('<GREEN>', color.GREEN)
         help_info = help_info.replace('<OFF>', color.OFF)
-        print(help_info)
+        print(' '.join(hdr.split()) + help_info)
 
     def print_help_trace(self):
         msg = """Need name to process with, examples:"""
@@ -500,47 +503,34 @@ class do_dns(str):
         except IndexError:
             return []
 
-    def read_arg4(self):
-        try:
-            return [self.rawcmd_list[3]]
-        except IndexError:
-            return []
-
-    def read_arg4_to_end(self):
-        try:
-            return self.rawcmd_list[3:]
-        except IndexError:
-            return []
-
     def read_resolve_args(self, holder):
         """DNS servers should be defined starts with @..., so multiple
         servers or multiple sets are supported, all others are treated
         as names."""
-        # TODO __doc__
-        server_list = []
-        name_list = []
-        # Determine server_list, match and reassign a value
-        server_list = self.read_arg3()
-        if server_list == ['all']:
-            server_list = nonpub_server_list
-        elif server_list == ['public']:
-            self.view_supported = False
-            server_list = public_server_list
-        elif server_list == [] or server_list[0] in servers.keys():
-            pass
+        args = self.read_arg3_to_end()
+        if args:
+            got_server_list = [x for x in args if x and x.startswith('@')]
+            name_list = [x for x in args if x and not x.startswith('@')]
+            logging.info('read_resolve_args: name_list is: %s' %
+                         ' '.join(name_list))
         else:
-            server_list = []
+            return holder
+        # Determine server_list, match or replace sets with proper list
+        server_list = []
+        for i in got_server_list:
+            if i == '@all':
+                server_list += nonpub_server_list
+            elif i == '@public':
+                server_list += public_server_list
+                self.view_supported = False
+            elif i.replace('@', '') in servers.keys():
+                server_list += [i.replace('@', '')]
+            else:
+                print('Ignored invalid server: %s' % i)
+        if server_list == []:  # Use iteration server by default
+            server_list = iterate_server_list
         logging.info('read_resolve_args: server_list is: %s' %
                      ' '.join(server_list))
-        # Determine name_list
-        if server_list == []:
-            # No arg as server_list, or it's domain name
-            name_list = self.read_arg3_to_end()
-            server_list = iterate_server_list
-        else:
-            name_list = self.read_arg4_to_end()
-        logging.info('read_resolve_args: name_list is: %s' %
-                     ' '.join(name_list))
         holder.update({'server_list': server_list})
         holder.update({'name_list': name_list})
         return holder
