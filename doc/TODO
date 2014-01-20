@@ -1,3 +1,16 @@
+Full UTF-8 support, including terminal. PUTTY exits with no reasone while input/output non-ASCII chars.
+
+
+'benchmark'
+
+	speed download [file-name]
+	speed upload [size]
+	performance tcp-syn
+	performance ping	# flood ping
+	performance dns query [IP]
+	performance proxy [IP]
+
+
 'config'	config lazycat self
 
 	user
@@ -6,7 +19,7 @@
 		disable
 		disable at 'some time'
 		enable
-	password
+		password
 	permission
 	tui
 
@@ -82,7 +95,6 @@
 	does not have a good pager
 	control code (from ssh, htop/atop) is kind hard to strip for me, by now.
 
-	view
 	search by date/time
 	search by device ip/name
 
@@ -127,3 +139,9 @@ Anyway, it faces to general network administrator, and gonna be simplify their w
 
 	my-permission
 	jumper all
+
+
+'website-one-key'	website trouble-shooting one key tool
+
+
+pause feature for run.with_log, when executing commands in cli.OMIT_OUTPUT, log should be paused, and resume after that command quited.

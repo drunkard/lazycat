@@ -2,6 +2,7 @@ Color convention
 
 cyan
  - command
+ - hints
 
 green
  - optional arguments
