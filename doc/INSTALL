@@ -46,8 +46,10 @@ DEPENDENCIES
 	pyftpdlib, need a ftp server while backup device configs
 	pygit2, used to automatically commit changes into git repo
 	# vsftpd
-	useradd -m -c "FTP user upload devconf" -s /sbin/nologin -d /data/lazycat/devconf/ up
-	useradd -m -c "FTP user readonly" -s /sbin/nologin -d /data/lazycat/devconf/ ro
+	useradd -m -c "FTP user upload devconf" -s /sbin/nologin \
+		-d /data/lazycat/devconf/ up
+	useradd -m -c "FTP user readonly" -s /sbin/nologin \
+		-d /data/lazycat/devconf/ ro
 
 
 =====================
@@ -55,7 +57,8 @@ DEPENDENCIES - system
 =====================
  iproute2
  dig, rndc
-	"dns flush*" need this command, and rndc interface of bind should open for remote execution
+	"dns flush*" need this command, and rndc interface of bind should
+	open for remote execution
 
 
 ===================
@@ -71,6 +74,10 @@ CONFIGURATION FILES
 	line like "model_wanted = model" in dm/model/__init__.py
 
  lazycat
+	NOTE: If you want to enable non-ascii characters support, you may
+	need to set PYTHONIOENCODING=UTF-8:replace in /etc/environment, or
+	other places where PAM supports.
+
 	'dns'
 	If you want to use this feature, you may need to write your own config:
 	etc/mydns.py, by following etc/mydns.py.example

@@ -2,6 +2,7 @@
 """Common libraries that suitable for anywhere.
 Both my own or borrowed from internet.
 """
+import logging
 import readline
 
 
@@ -9,7 +10,6 @@ def cmd_exists(command, PATH=""):
     """Check if given command exists.
     PATH is optional.
     """
-    import logging
     from distutils.spawn import find_executable
     if PATH == "":
         PATH = "/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/sbin:/usr/local/bin"
@@ -85,16 +85,17 @@ def TUI(prompt='no prompt'):
         TUI()
     """
     import cli
+    cli.check_env()
     if prompt == 'no prompt':   # Determine prompt
         prompt = cli.PROMPT
     try:
         readline.parse_and_bind('tab: complete')
         readline.set_completer_delims(' ')
+        readline.set_completer(cli.MLCompleter().complete)
     except Exception as e:
         print(e)
     # Start input loop
     while True:
-        readline.set_completer(cli.MLCompleter().complete)
         # Get input, and deal with exceptions
         try:
             rawcmd = input(prompt)
@@ -108,6 +109,9 @@ def TUI(prompt='no prompt'):
             cli.do_quit('quit')
         # Determine if the raw command is empty
         rawcmd = rawcmd.lstrip()
+        # TODO: redraw the line with completed rawcmd
+        # readline.insert_text(cli.complete_cmd(rawcmd))
+        # readline.redisplay()
         if rawcmd:
             cli.route(rawcmd)
         else:

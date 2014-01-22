@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import logging
 import os
 import readline
@@ -24,7 +25,7 @@ class do_show(str):
         except AttributeError:
             if self.try_system_cmd(l2cmd) is None:
                 prefix_matches = [c for c in cli.show_l2.keys()
-                           if c and c.startswith(l2cmd)]
+                                  if c and c.startswith(l2cmd)]
                 say.available_cmds(cli.show_l2, justshow=prefix_matches)
             return
 

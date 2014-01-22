@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
+import sys
 try:
     import cli
     from lib import color, say
@@ -43,6 +44,8 @@ class do_config(list):
         msg = """Debug messages are colored dark grey, make sure your terminal
             supports this color."""
         print(' '.join(msg.split()))
+        logging.debug('default stdin encoding: %s, stdout encoding: %s' %
+                      (sys.stdin.encoding, sys.stdout.encoding))
 
     def do_debug_off(self):
         logging.getLogger().setLevel(50)

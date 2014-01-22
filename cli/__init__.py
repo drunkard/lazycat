@@ -19,7 +19,7 @@ except ImportError as e:
     raise e
 
 
-PROMPT = color.GREEN_BOLD + "jumper" + color.OFF + "> "
+PROMPT = color.green_bold('jumper') + '> '
 # These commands' output to ncurses like window, which is hard to strip
 OMIT_OUTPUT = ['atop', 'htop', 'iotop', 'iftop', 'dnstop']
 
@@ -214,6 +214,18 @@ class bgrun(threading.Thread):
 
     def run(self):
         self.runnable()
+
+
+def check_env():
+    """Check TUI enviroment, and print warning messages if found improper
+    settings."""
+    encoding = 'UTF-8'
+    if sys.stdin.encoding != encoding or sys.stdout.encoding != encoding:
+        msg = """sys.stdin.encoding is not UTF-8, you may experience
+        exceptions if got non-ASCII characters. If you'd like to fix it,
+        please add "PYTHONIOENCODING=UTF-8:replace" to /etc/environment, this
+        config belongs to PAM."""
+        print(color.yellow_bold(' '.join(msg.split())))
 
 
 def complete_cmd(rawcmd, d=all_cmd, level=0):
