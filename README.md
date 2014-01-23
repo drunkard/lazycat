@@ -18,16 +18,15 @@ A lot network diagnosis tools, like {icmp,tcp,udp}-ping, {icmp,tcp,udp}-tracerou
 
 Input auto completion by typing TAB.
 
+DNS system diagnosis helper.
+
 [And a lot planned feature in TODO]
 
 
 Required Python Modules
 -----------------------
-This program is using python2, not compatible with python3 yet. Because the session recording code is heavily depends on pexpect, so before I implemented my own interact code or pexpect moved to python3, it can only work with python2.
 
-Needed python mods beside builtins:
-
-pexpect
+See doc/INSTALL
 
 
 Required System Commands
